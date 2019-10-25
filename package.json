@@ -1,0 +1,27 @@
+{
+  "name": "gatekeeper",
+  "version": "1.0.0",
+  "description": "Gatekeeping bot for discord",
+  "scripts": {
+    "start": "npm run build && node dist/src/main.js",
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kruhlmann/gatekeeper.git"
+  },
+  "author": "Kruhlmann",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/Kruhlmann/gatekeeper/issues"
+  },
+  "homepage": "https://github.com/Kruhlmann/gatekeeper#readme",
+  "dependencies": {
+    "@types/node": "^12.11.7",
+    "discord.js": "^11.5.1",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.6.4",
+    "uws": "^100.0.1"
+  }
+}
