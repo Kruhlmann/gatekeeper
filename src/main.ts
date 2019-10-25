@@ -20,9 +20,22 @@ process.on("unhandledRejection", handle_exception);
         : config.discord_bot_token.development;
 
     log("Awaiting response from discord", LoggingLevel.DEV);
-    discord_client.on("ready", (e: any) => {
+    discord_client.on("ready", () => {
         log(`Started gatekeeper in ${config.deployment_mode} mode`);
-        console.log(e);
+    });
+
+    discord_client.on("message", (message: discord.Message) => {
+        message.author.send("xd");
+    });
+
+    discord_client.on("guildMemberAdd", (user: discord.GuildMember) => {
+        const guild = user.guild;
+        if (guild.id !== config.guild_id) {
+            return;
+        }
+
+        console.log(Object.keys(guild.roles)
+
     });
 
 
