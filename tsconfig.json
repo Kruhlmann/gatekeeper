@@ -12,7 +12,8 @@
         "lib": ["esnext"],
         "outDir": "dist",
         "moduleResolution": "node",
-        "allowJs": true
+        "allowJs": true,
+        "downlevelIteration": true
     },
     "include": [
         "src/**/*.ts"
