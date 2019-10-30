@@ -12,16 +12,28 @@ import * as config from "../config.json";
 process.on("uncaughtException", handle_exception);
 process.on("unhandledRejection", handle_exception);
 
-function remove_chromosomes(collection: Map<string, any>) {
-    return Object.fromEntries(collection.entries())
+function send_captcha(user: discord.GuildMember) {
+    user.send("Hey BUDDY");
 }
 
-function purge_routine(guild: discord.Guild, read_role: discord.Role) {
+/**
+ * Adds the default read-only role to all members without it.
+ *
+ * @param guild - Guild to apply read role to.
+ * @param read_role - Role to apply to members.
+ */
+function role_routine(guild: discord.Guild, read_role: discord.Role): void {
     guild.members.forEach((user) => {
-        const has_role = !!user.roles.find((role) => role.id === read_role.id);
-        if (!has_role) {
+        const has_read_role = !!user.roles.find((role) => {
+            return role.id === read_role.id;
+        });
+
+        if (!has_read_role) {
             user.addRole(read_role);
-            log(`Added read role to user <${user.user.username}:${user.id}>`);
+            const usr_str = `<${user.user.username}:${user.id}>`;
+            const role_str = `<${read_role.name}:${read_role.id}>`;
+            log(`Added read role ${role_str} to user ${usr_str}`);
+            send_captcha(user);
         }
     });
 }
@@ -37,36 +49,19 @@ function purge_routine(guild: discord.Guild, read_role: discord.Role) {
 
     discord_client.on("ready", () => {
         log(`Started gatekeeper in ${config.deployment_mode} mode`);
-        const guild = discord_client.guilds.get(config.guild_id)
-        const read_role = guild.roles.get(config.role_id)
-        // TODO
-        purge_routine(guild, read_role)
-        //setInterval(() => purge_routine(discord_client), 1000)
+
+        const guild = discord_client.guilds.get(config.guild_id);
+        const read_role = guild.roles.get(config.role_ids.read);
+
+        role_routine(guild, read_role);
+        setInterval(() => role_routine(guild, read_role), 60 * 1000);
     });
 
-    discord_client.on("message", (message: discord.Message) => {
-        const channel = message.channel;
-
-        if (channel.type == "text") {
-            const guild = (channel as discord.TextChannel).guild;
-
-            if (guild.id !== config.guild_id) {
-                return;
-            }
-
-            const roles = guild.roles;
-            console.log(JSON.stringify(Object.keys(discord_client.guilds), null, 4))
-
-        }
-
-    });
+    //discord_client.on("message", (message: discord.Message) => {
+    //});
 
     discord_client.on("guildMemberAdd", (user: discord.GuildMember) => {
-        const guild = user.guild;
-        if (guild.id !== config.guild_id) {
-            return;
-        }
-        console.log(Object.keys(guild.roles));
+        send_captcha(user);
     });
 
     // Authenticate.
