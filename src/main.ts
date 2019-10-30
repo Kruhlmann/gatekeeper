@@ -6,14 +6,31 @@
 
 import * as discord from "discord.js";
 import { handle_exception, log } from "./io";
-import { LoggingLevel } from "./typings/types.js";
+import { LoggingLevel } from "./typings/types";
 import * as config from "../config.json";
+import * as captcha_generator from "../captchas";
 
 process.on("uncaughtException", handle_exception);
 process.on("unhandledRejection", handle_exception);
 
+const captcha_preface = "__**Fight Club Gatekeeping**__\n\nWelcome to the Fight Club Classic Warrior discord.\n\nMost channels in this discord are for **serious** theorycrafting and as such we ask you to please answer the question below, if you want write priviledges, to verify that you have at least some basic knowledge about the warrior class.\n\nYou can find the answer to your question if you throroughly read through the frequently asked questions channels.\n\n"
+
+/**
+ * Sends a captcha to a user to allow them to optain write permissions.
+ *
+ * @param user - User to send captcha to.
+ */
 function send_captcha(user: discord.GuildMember) {
-    user.send("Hey BUDDY");
+    const captcha = captcha_generator.generate();
+    const message = new discord.RichEmbed()
+        .setTitle("Fight Club Captcha")
+        .setDescription(captcha.text)
+        .addField("Answer", captcha.answer)
+        .addField("Seed", captcha.seed)
+        .setThumbnail("https://img.rankedboost.com/wp-content/uploads/2019/05/WoW-Classic-Warrior-Guide-150x150.png")
+
+    user.send(captcha_preface)
+    user.send(message);
 }
 
 /**
@@ -54,7 +71,7 @@ function role_routine(guild: discord.Guild, read_role: discord.Role): void {
         const read_role = guild.roles.get(config.role_ids.read);
 
         role_routine(guild, read_role);
-        setInterval(() => role_routine(guild, read_role), 60 * 1000);
+        setInterval(() => role_routine(guild, read_role), 5000);
     });
 
     //discord_client.on("message", (message: discord.Message) => {
