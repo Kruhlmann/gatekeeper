@@ -11,6 +11,7 @@ import * as config from "../config.json";
 import * as captcha_generator from "../captchas";
 import { createHash } from "crypto";
 
+// Global exception handling.
 process.on("uncaughtException", handle_exception);
 process.on("unhandledRejection", handle_exception);
 
@@ -53,11 +54,11 @@ function role_routine(guild: discord.Guild, read_role: discord.Role): void {
             const usr_str = `<${user.user.username}:${user.id}>`;
             const role_str = `<${read_role.name}:${read_role.id}>`;
             log(`Added read role ${role_str} to user ${usr_str}`);
-            send_captcha(user);
         }
     });
 }
 
+// Main fucntion.
 (async () => {
     // Init discord virtual client.
     const discord_client = new discord.Client();
@@ -78,14 +79,20 @@ function role_routine(guild: discord.Guild, read_role: discord.Role): void {
     });
 
     discord_client.on("message", (message: discord.Message) => {
+        const guild = discord_client.guilds.get(config.guild_id);
+        const user = guild.members.get(message.author.id);
+
         if (message.channel.type !== "dm") {
+            if (message.channel.id === config.trigger_channel_id && message.content === "!captcha") {
+                // TODO: Don't send message to people who already have write roles.
+                send_captcha(user);
+            }
             return;
         }
+
         const channel = message.channel as discord.DMChannel;
         const messages_promise = channel.fetchMessages({})
-        const guild = discord_client.guilds.get(config.guild_id);
         const write_role = guild.roles.get(config.role_ids.write);
-        const user = guild.members.get(message.author.id);
         const has_write_role = !!user.roles.find((role) => {
             return role.id === config.role_ids.write;
         });
@@ -118,16 +125,14 @@ function role_routine(guild: discord.Guild, read_role: discord.Role): void {
                 }
                 break;
             }
+
             if (queue.length > 0) {
                 message.channel.send(queue[0])
             }
         });
     });
 
-    discord_client.on("guildMemberAdd", (user: discord.GuildMember) => {
-        send_captcha(user);
-    });
-
     // Authenticate.
     discord_client.login(dicord_token).catch(handle_exception);
 })();
+
