@@ -91,20 +91,24 @@ function role_routine(guild: discord.Guild, read_role: discord.Role): void {
         }
 
         const channel = message.channel as discord.DMChannel;
-        const messages_promise = channel.fetchMessages({})
+        const messages_promise = channel.fetchMessages({});
         const write_role = guild.roles.get(config.role_ids.write);
         const has_write_role = !!user.roles.find((role) => {
             return role.id === config.role_ids.write;
         });
 
-        if (has_write_role || message.author.id === discord_client.user.id) {
+        // TODO: Re-add role restriction.
+        if (/*has_write_role || */message.author.id === discord_client.user.id) {
             return;
         }
 
         messages_promise.then((messages: Map<any, discord.Message>) => {
             const queue: string[] = [];
+            console.log(1)
             for (const [m_id, m] of messages.entries()) {
+                console.log(2)
                 if (m.author.id !== discord_client.user.id || !m.content.match(/\w+:\w{64,64}/g)) {
+                    console.log("Skipping msg")
                     continue;
                 }
                 const seed = m.content.split(":")[0].replace("`", "");
