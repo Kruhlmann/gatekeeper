@@ -119,9 +119,9 @@ function hit_cap_generator(): {answer: string, seed: string, text: string} {
                 break;
             case "glancing":
                 const glancing_chance = 10 + ((target_defense - Math.min(300, weapon_skill)) * 2);
-                answer = Math.ceil(glancing_chance / 10) * 10;
-                attack_query = "the chance that you land a glancing blow (rounded up to nearest 1/10th)?";
-                answer_example = "5.2";
+                answer = Math.max(0, glancing_chance);
+                attack_query = "the chance that you land a glancing blow?";
+                answer_example = "5";
                 break;
             default:
                 throw new Error(`Unknown mitigation type: ${mitigation_type}`);
