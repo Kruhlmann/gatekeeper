@@ -129,15 +129,14 @@ function hit_cap_generator(): {answer: string, seed: string, text: string} {
     } else {
         // No mitigation type means hit cap calculation.
         const miss_chance = Math.ceil(5 + skill_delta * miss_modifier);
-        answer = miss_chance;
-        attack_query = "your hit cap (rounded up)?"
+        answer = Math.ceil(yellow_hits ? miss_chance : miss_chance*0.8+20) + (skill_delta>10 ? 1 : 0);
+        attack_query = `your **${yellow_hits ? "yellow" : "white"}** hit cap (rounded up)?`
         answer_example = "13";
     }
 
     // Message text.
     const scenario = `You (a **${scenario_obj.sex_prefix !== "" ? `${scenario_obj.sex_prefix} ` : ""}${scenario_obj.sex} ${scenario_obj.race}** DPS fury warrior in **<${scenario_obj.guild_name}>**) is attacking a level **${scenario_obj.target_lvl}** **${scenario_obj.target}** from **${front ? "the front" : "behind"}** using your **${weapon_subtype} ${weapon_type}${weapon_subtype == "dual wielded" ? "s" : ""}**`;
     const question = `Given these parameters what is ${attack_query}\n\nAnswer example: \`${answer_example}\` (answer is ${answer} btw)`;
-    //  **${yellow_hits ? "yellow" : "white"}**
     return {
         answer: `${answer}`,
         seed: (Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 32) + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 32)).toUpperCase(),
