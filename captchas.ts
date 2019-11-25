@@ -72,7 +72,7 @@ function hit_cap_generator(): {answer: string, seed: string, text: string} {
     const human_factor = scenario_obj.race === "human" && (weapon_type === "mace" || weapon_type === "sword") ? 5 : 0;
     const weapon_skill = 300 + orc_factor + human_factor;
     const yellow_hits = Math.random() < 0.5;
-    const front = Math.random() < 0.5 || mitigation_type === "block";
+    const front = Math.random() < 0.5 || mitigation_type === "block"  || mitigation_type === "parry";
 
     /*
     - What is the chance for his attacks to be [missed/dodged/glanced, if from the front then also blocked]
