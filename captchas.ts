@@ -88,9 +88,7 @@ function hit_cap_generator(): {answer: string, seed: string, text: string} {
     const skill_delta = target_defense - weapon_skill;
     const miss_modifier = (skill_delta > 10 ? 0.2 : 0.1);
 
-    const dodge_chance = Math.round(10 * (5 + skill_delta * 0.1)) / 10;
-
-    let answer: number;
+    let answer: string;
     let answer_example: string;
     let attack_query: string;
 
@@ -101,25 +99,25 @@ function hit_cap_generator(): {answer: string, seed: string, text: string} {
                 // TODO: Ask magey about this calculation, using 10 for now as
                 // a replacement.
                 const parry_chance = 10;
-                answer = Math.ceil(parry_chance / 10) * 10;
+                answer = parry_chance.toFixed(1);
                 attack_query = "the chance that your attacks are parried (rounded up to nearest 1/10th)?";
                 answer_example = "19.4";
                 break;
             case "block":
                 const block_chance = front ? 0 : Math.min(5, 5 + skill_delta * 0.1);
-                answer = Math.ceil(block_chance / 10) * 10;
+                answer = block_chance.toFixed(1);
                 attack_query = "the chance that your attacks are blocked (rounded up to nearest 1/10th)?";
                 answer_example = "14.2";
                 break;
             case "dodge":
                 const dodge_chance = 5 + skill_delta * 0.1;
-                answer = dodge_chance;
+                answer = dodge_chance.toFixed(1);
                 attack_query = "the chance that your attacks are dodged (rounded up to nearest 1/10th)?";
                 answer_example = "7.2";
                 break;
             case "glancing":
                 const glancing_chance = 10 + ((target_defense - Math.min(300, weapon_skill)) * 2);
-                answer = Math.ceil(glancing_chance / 10) * 10;
+                answer = glancing_chance.toFixed(0);
                 attack_query = "the chance that you land a glancing blow (rounded up to nearest 1/10th)?";
                 answer_example = "5.2";
                 break;
@@ -129,7 +127,7 @@ function hit_cap_generator(): {answer: string, seed: string, text: string} {
     } else {
         // No mitigation type means hit cap calculation.
         const miss_chance = Math.ceil(5 + skill_delta * miss_modifier);
-        answer = miss_chance;
+        answer = miss_chance.toFixed(0);
         attack_query = "your hit cap (rounded up)?"
         answer_example = "13";
     }
