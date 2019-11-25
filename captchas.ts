@@ -106,8 +106,8 @@ function hit_cap_generator(): {answer: string, seed: string, text: string} {
                 answer_example = "19.4";
                 break;
             case "block":
-                const block_chance = front ? 0 : Math.min(5, 5 + skill_delta * 0.1);
-                answer = Math.ceil(block_chance / 10) * 10;
+                const block_chance = front ? Math.min(5, 5 + skill_delta * 0.1) : 0;
+                answer = block_chance;
                 attack_query = "the chance that your attacks are blocked (rounded up to nearest 1/10th)?";
                 answer_example = "14.2";
                 break;
