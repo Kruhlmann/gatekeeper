@@ -128,7 +128,7 @@ function hit_cap_generator(): {answer: string, seed: string, text: string} {
         }
     } else {
         // No mitigation type means hit cap calculation.
-        const miss_chance = Math.ceil(5 + skill_delta * miss_modifier);
+        const miss_chance = Math.ceil(5 + skill_delta * miss_modifier) + (skill_delta>10 ? 1 : 0);
         answer = miss_chance;
         attack_query = "your hit cap (rounded up)?"
         answer_example = "13";
