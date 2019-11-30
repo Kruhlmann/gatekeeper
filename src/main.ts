@@ -10,6 +10,7 @@ import { LoggingLevel } from "./typings/types";
 import * as config from "../config.json";
 import * as captcha_generator from "./captchas";
 import { createHash } from "crypto";
+import * as psql from "./db"
 
 // Global exception handling.
 process.on("uncaughtException", handle_exception);
@@ -65,6 +66,9 @@ function role_routine(guild: discord.Guild, read_role: discord.Role): void {
     const dicord_token = config.deployment_mode === "production"
         ? config.discord_bot_token.production
         : config.discord_bot_token.development;
+
+    const db = psql.connect()
+    console.log(await db.get_captchas());
 
     log("Awaiting response from discord", LoggingLevel.DEV);
 

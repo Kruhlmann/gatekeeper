@@ -18,6 +18,8 @@ To invite the bot click [this link](https://discordapp.com/oauth2/authorize?clie
 
 ### Local setup
 
+#### Dependencies
+
 If you want to run your own instance of the bot the following packages are required:
 
 * gcc
@@ -28,9 +30,16 @@ If you want to run your own instance of the bot the following packages are requi
 * automake
 * nodejs
 * npm
+* postgres >=11
 
-The following packages are reccomended:
+The following packages are recomended:
 
 * pm2 `npm i -g pm2`
 
 You must rename [config.json.example](config.json.example) to `config.json` and fill it in with the required details. 
+
+#### Environment variables
+
+* `GATEKEEPER_DB_USR` postgres database user
+* `GATEKEEPER_DB_PWD` postgres database user password
+* `GATEKEEPER_DB_NAM` postgres database name

@@ -79,7 +79,7 @@ function make_combat_scenario() {
             level: target_lvl,
             defense: target_lvl * 5,
         },
-        skill_delta: target_defense - weapon_skill,
+        skill_delta: target_lvl * 5 - weapon_skill,
     }
 }
 
