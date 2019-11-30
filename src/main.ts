@@ -9,7 +9,6 @@ import { handle_exception, log } from "./io";
 import { LoggingLevel } from "./typings/types";
 import * as config from "../config.json";
 import * as captcha_generator from "./captchas";
-import { createHash } from "crypto";
 import * as psql from "./db"
 
 // Global exception handling.
@@ -17,6 +16,8 @@ process.on("uncaughtException", handle_exception);
 process.on("unhandledRejection", handle_exception);
 
 const captcha_preface = "__**Fight Club Gatekeeping**__\n\nWelcome to the Fight Club Classic Warrior discord.\n\nMost channels in this discord are for **serious** theorycrafting and as such we ask you to please answer the question below, if you want write priviledges, to verify that you have at least some basic knowledge about the warrior class.\n\nYou can find the answer to your question if you throroughly read through the frequently asked questions channels.\n\n"
+
+let db: psql.DB;
 
 /**
  * Sends a captcha to a user to allow them to optain write permissions.
@@ -29,13 +30,11 @@ function send_captcha(user: discord.GuildMember) {
         .setTitle("Fight Club Captcha")
         .setDescription(captcha.text)
         .setThumbnail("https://img.rankedboost.com/wp-content/uploads/2019/05/WoW-Classic-Warrior-Guide-150x150.png")
-
-    const hasher = createHash("sha256");
-    hasher.update(captcha.seed + captcha.answer)
-
-    user.send(captcha_preface)
-    user.send(message);
-    user.send(`\`${captcha.seed}:${hasher.digest("hex")}\``);
+    db.register_captcha(user.id, captcha.answer).then((db_captcha) => {
+        user.send(captcha_preface)
+        user.send(message);
+        user.send(`Your ID: \`${db_captcha.id}\``);
+    });
 }
 
 /**
@@ -66,9 +65,8 @@ function role_routine(guild: discord.Guild, read_role: discord.Role): void {
     const dicord_token = config.deployment_mode === "production"
         ? config.discord_bot_token.production
         : config.discord_bot_token.development;
-
-    const db = psql.connect()
-    console.log(await db.get_captchas());
+    // Init database.
+    db = psql.connect()
 
     log("Awaiting response from discord", LoggingLevel.DEV);
 
@@ -108,29 +106,28 @@ function role_routine(guild: discord.Guild, read_role: discord.Role): void {
 
         messages_promise.then((messages: Map<any, discord.Message>) => {
             const queue: string[] = [];
-            console.log(1)
             for (const [m_id, m] of messages.entries()) {
-                console.log(2)
-                if (m.author.id !== discord_client.user.id || !m.content.match(/\w+:\w{64,64}/g)) {
+                if (m.author.id !== discord_client.user.id || !m.content.match(/Your ID: `[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`/g)) {
                     console.log("Skipping msg")
                     continue;
                 }
-                const seed = m.content.split(":")[0].replace("`", "");
-                const answer = m.content.split(":")[1].replace("`", "");
+                const id = m.content.split(" ")[2].replace(/`/g, "");
 
-                const hasher = createHash("sha256");
-                hasher.update(seed + message.content);
-                const user_answer = hasher.digest("hex");
+                db.get_captchas(id).then((captchas) => {
+                    if (captchas[0].answer === message.content) {
+                        user.addRole(write_role);
+                        const usr_str = `<${user.user.username}:${user.id}>`;
+                        const role_str = `<${write_role.name}:${write_role.id}>`;
+                        log(`Added read role ${role_str} to user ${usr_str}`);
+                        queue.push(`\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`)
+                    } else {
+                        queue.push(`\`${message.content}\` is not correct.`)
+                    }
+                }).catch((error) => {
+                    log(error.stack, LoggingLevel.ERR)
+                    queue.push("I can't find an active captcha for you.")
+                });
 
-                if (user_answer === answer) {
-                    user.addRole(write_role);
-                    const usr_str = `<${user.user.username}:${user.id}>`;
-                    const role_str = `<${write_role.name}:${write_role.id}>`;
-                    log(`Added read role ${role_str} to user ${usr_str}`);
-                    queue.push(`\`${message.content}\` is correct. You've been given write permissions to the channels.`)
-                } else {
-                    queue.push(`\`${message.content}\` is not correct.`)
-                }
                 break;
             }
 
