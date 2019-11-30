@@ -19,6 +19,7 @@ export class Captcha extends Model {
     public id!: string;
     public user_id!: string;
     public answer!: string;
+    public active!: boolean;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 };
@@ -57,6 +58,11 @@ export class DB {
                 type: DataTypes.STRING(256),
                 allowNull: false,
             },
+            active: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: true,
+                allowNull: false,
+            }
         }, {
             sequelize: this.connection,
             tableName: "captchas",
