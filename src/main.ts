@@ -10,6 +10,7 @@ import { LoggingLevel } from "./typings/types";
 import * as config from "../config.json";
 import * as captcha_generator from "./captchas";
 import * as psql from "./db"
+import { Op } from "sequelize";
 
 // Global exception handling.
 process.on("uncaughtException", handle_exception);
@@ -37,6 +38,17 @@ function send_captcha(user: discord.GuildMember) {
         user.send(captcha_preface)
         user.send(message);
         user.send(`Your ID: \`${c.id}\``);
+        psql.Captcha.findAll({
+            where: {
+                id: {
+                    [Op.ne]: c.id
+                }
+            }
+        }).then((captchas) => {
+            for (const c of captchas) {
+                c.update({ active: false })
+            }
+        });
     });
 }
 
@@ -108,35 +120,34 @@ function role_routine(guild: discord.Guild, read_role: discord.Role): void {
         }
 
         messages_promise.then((messages: Map<any, discord.Message>) => {
-            const queue: string[] = [];
             for (const [m_id, m] of messages.entries()) {
                 if (m.author.id !== discord_client.user.id || !m.content.match(/Your ID: `[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`/g)) {
                     console.log("Skipping msg")
                     continue;
                 }
                 const id = m.content.split(" ")[2].replace(/`/g, "");
-/*
-                db.get_captchas(id).then((captchas) => {
-                    if (captchas[0].answer === message.content) {
+
+                psql.Captcha.findOne({
+                    where: {
+                        [Op.and]: [{ id: id }, { active: true }]
+                    }
+                }).then((c: psql.Captcha) => {
+                    if (c.answer === message.content) {
                         user.addRole(write_role);
                         const usr_str = `<${user.user.username}:${user.id}>`;
                         const role_str = `<${write_role.name}:${write_role.id}>`;
                         log(`Added read role ${role_str} to user ${usr_str}`);
-                        queue.push(`\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`)
+                        message.channel.send(`\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`);
+                        c.update({ active: false });
                     } else {
-                        queue.push(`\`${message.content}\` is not correct.`)
+                        message.channel.send(`\`${message.content}\` is not correct.`)
                     }
                 }).catch((error) => {
                     log(error.stack, LoggingLevel.ERR)
-                    queue.push("I can't find an active captcha for you.")
+                    message.channel.send("I can't find an active captcha for you.")
                 });
-                */
 
                 break;
-            }
-
-            if (queue.length > 0) {
-                message.channel.send(queue[0])
             }
         });
     });
