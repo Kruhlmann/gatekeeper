@@ -99,7 +99,7 @@ function make_combat_scenario() {
 function hit_cap_generator(): {answer: string, seed: string, text: string} {
     const scenario = make_combat_scenario();
 
-    const mitigation_type = arr_random([false, "parry", "dodge", "block", "glancing"]);
+    const mitigation_type = arr_random([false, "dodge", "block", "glancing"]);
     const yellow_hits = Math.random() < 0.5;
     const front = Math.random() < 0.5 || mitigation_type === "block";
     const miss_modifier = (scenario.skill_delta > 10 ? 0.2 : 0.1);
@@ -112,8 +112,7 @@ function hit_cap_generator(): {answer: string, seed: string, text: string} {
         // Mitigation type is either block, dodge, parry or glancing.
         switch (mitigation_type) {
             case "parry":
-                // TODO: Ask magey about this calculation, using 10 for now as
-                // a replacement.
+                // TODO: This has no formula yet.
                 const parry_chance = 10;
                 answer = Math.ceil(parry_chance / 10) * 10;
                 attack_query = "the chance that your attacks are parried (rounded up to nearest 1/10th)?";
