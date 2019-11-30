@@ -1,5 +1,5 @@
-import * as adjectives from "./adjectives.json";
-import * as nouns from "./nouns.json";
+import * as adjectives from "./res/adjectives.json";
+import * as nouns from "./res/nouns.json";
 
 const sexes = ["non-binary", "male", "female"];
 const races = ["orc", "human", "troll", "gnome"];
@@ -121,7 +121,7 @@ function hit_cap_generator(): {answer: string, seed: string, text: string} {
                 answer_example = "19.4";
                 break;
             case "block":
-                const block_chance = front ? Math.min(5, 5 + skill_delta * 0.1) : 0;
+                const block_chance = front ? Math.min(5, 5 + scenario.skill_delta * 0.1) : 0;
                 answer = block_chance;
                 attack_query = "the chance that your attacks are blocked (rounded up to nearest 1/10th)?";
                 answer_example = "14.2";
