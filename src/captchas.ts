@@ -1,5 +1,5 @@
-import * as adjectives from "./res/adjectives.json";
-import * as nouns from "./res/nouns.json";
+import * as adjectives from "../res/adjectives.json";
+import * as nouns from "../res/nouns.json";
 
 const sexes = ["non-binary", "male", "female"];
 const races = ["orc", "human", "troll", "gnome"];
