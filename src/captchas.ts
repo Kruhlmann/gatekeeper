@@ -66,7 +66,6 @@ function make_combat_scenario() {
 
     const target_name = arr_random(targets) as string;
     const target_lvl = Math.round(Math.random() * (max_lvl - min_lvl) + min_lvl);
-    const target_defense = target_lvl * 5;
 
     return {
         ...scenario,
@@ -78,7 +77,7 @@ function make_combat_scenario() {
         target: {
             name: target_name,
             level: target_lvl,
-            defense: target_defense,
+            defense: target_lvl * 5,
         },
         skill_delta: target_defense - weapon_skill,
     }
