@@ -8,7 +8,7 @@ import * as discord from "discord.js";
 import { handle_exception, log } from "./io";
 import { LoggingLevel } from "./typings/types";
 import * as config from "../config.json";
-import * as captcha_generator from "../captchas";
+import * as captcha_generator from "./captchas";
 import { createHash } from "crypto";
 
 // Global exception handling.
