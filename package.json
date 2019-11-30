@@ -5,7 +5,8 @@
   "scripts": {
     "start": "npm run build && node dist/src/main.js",
     "build": "tsc",
-    "watch": "tsc -w"
+    "watch": "tsc -w",
+    "migrate": "node-pg-migrate"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,8 @@
   "dependencies": {
     "@types/node": "^12.11.7",
     "discord.js": "^11.5.1",
+    "node-pg-migrate": "^3.23.3",
+    "pg": "^7.14.0",
     "ts-node": "^8.4.1",
     "typescript": "^3.6.4",
     "uws": "^100.0.1"
