@@ -137,7 +137,8 @@ function role_routine(guild: discord.Guild, read_role: discord.Role): void {
                         const usr_str = `<${user.user.username}:${user.id}>`;
                         const role_str = `<${write_role.name}:${write_role.id}>`;
                         log(`Added read role ${role_str} to user ${usr_str}`);
-                        message.channel.send(`\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`)
+                        message.channel.send(`\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`);
+                        c.update({ active: false });
                     } else {
                         message.channel.send(`\`${message.content}\` is not correct.`)
                     }
