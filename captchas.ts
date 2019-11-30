@@ -47,6 +47,7 @@ function make_scenario(): {
     const guild_adjective = arr_random(adjectives.words);
     const guild_noun = arr_random(nouns.words);
     const guild_name = title_case(`${guild_adjective} ${guild_noun}`);
+
     return { sex, race, sex_prefix, guild_name }
 }
 
