@@ -127,7 +127,11 @@ function role_routine(guild: discord.Guild, read_role: discord.Role): void {
                 }
                 const id = m.content.split(" ")[2].replace(/`/g, "");
 
-                psql.Captcha.findByPk(id).then((c: psql.Captcha) => {
+                psql.Captcha.findOne({
+                    where: {
+                        [Op.and]: [{ id: id }, { active: true }]
+                    }
+                }).then((c: psql.Captcha) => {
                     if (c.answer === message.content) {
                         user.addRole(write_role);
                         const usr_str = `<${user.user.username}:${user.id}>`;
