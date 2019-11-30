@@ -13,7 +13,8 @@
         "outDir": "dist",
         "moduleResolution": "node",
         "allowJs": true,
-        "downlevelIteration": true
+        "downlevelIteration": true,
+        "target": "es6"
     },
     "include": [
         "src/**/*.ts"

@@ -30,10 +30,13 @@ function send_captcha(user: discord.GuildMember) {
         .setTitle("Fight Club Captcha")
         .setDescription(captcha.text)
         .setThumbnail("https://img.rankedboost.com/wp-content/uploads/2019/05/WoW-Classic-Warrior-Guide-150x150.png")
-    db.register_captcha(user.id, captcha.answer).then((db_captcha) => {
+    psql.Captcha.create({
+        user_id: user.id,
+        answer: captcha.answer,
+    }).then((c: psql.Captcha) => {
         user.send(captcha_preface)
         user.send(message);
-        user.send(`Your ID: \`${db_captcha.id}\``);
+        user.send(`Your ID: \`${c.id}\``);
     });
 }
 
@@ -112,7 +115,7 @@ function role_routine(guild: discord.Guild, read_role: discord.Role): void {
                     continue;
                 }
                 const id = m.content.split(" ")[2].replace(/`/g, "");
-
+/*
                 db.get_captchas(id).then((captchas) => {
                     if (captchas[0].answer === message.content) {
                         user.addRole(write_role);
@@ -127,6 +130,7 @@ function role_routine(guild: discord.Guild, read_role: discord.Role): void {
                     log(error.stack, LoggingLevel.ERR)
                     queue.push("I can't find an active captcha for you.")
                 });
+                */
 
                 break;
             }

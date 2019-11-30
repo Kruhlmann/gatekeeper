@@ -5,7 +5,9 @@
  */
 
 import { Pool } from "pg";
-import { Captcha } from "./typings/types";
+import { LoggingLevel } from "./typings/types";
+import { Sequelize, DataTypes, Model } from "sequelize";
+import { handle_exception, log } from "./io";
 
 const DB_USR = process.env.GATEKEEPER_DB_USR;
 const DB_PWD = process.env.GATEKEEPER_DB_PWD;
@@ -13,39 +15,51 @@ const DB_NAM = process.env.GATEKEEPER_DB_NAM;
 
 let instance: DB;
 
+export class Captcha extends Model {
+    public id!: string;
+    public user_id!: string;
+    public answer!: string;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+};
+
 export class DB {
-    private pool: Pool;
+    private connection: Sequelize;
 
     constructor() {
-        this.pool = new Pool({
-            user: DB_USR,
+        this.connection = new Sequelize(DB_NAM, DB_USR, DB_PWD, {
             host: "localhost",
-            database: DB_NAM,
-            password: DB_PWD,
-            port: 5432,
+            dialect: "postgres",
+            logging: (msg) => log(msg, LoggingLevel.DEV),
+        })
+
+        this.connection.authenticate().then(() => {
+            log("Successfully connected to DB on localhost:5432");
         });
+
+        this.init_models();
+
     }
 
-
-    public async get_captchas(id = "", user_id = ""): Promise<Captcha[]> {
-        return new Promise((resolve, reject) => {
-            this.pool.query("SELECT * FROM captchas WHERE (id=$1::uuid OR $1::text='') AND (user_id=$2::text OR $2::text='')", [id, user_id], (err, res) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(res.rows);
-            });
-        });
-    }
-
-    public async register_captcha(user_id: string, answer: string): Promise<Captcha> {
-        return new Promise((resolve, reject) => {
-            this.pool.query("INSERT INTO captchas (user_id, answer) VALUES ($1::text, $2::text) RETURNING *", [user_id, answer], (err, res) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(res.rows[0]);
-            });
+    private init_models() {
+        Captcha.init({
+            id: {
+                type: DataTypes.UUID,
+                defaultValue: Sequelize.literal("uuid_generate_v4()"),
+                allowNull: false,
+                primaryKey: true,
+            },
+            user_id: {
+                type: DataTypes.STRING(256),
+                allowNull: false,
+            },
+            answer: {
+                type: DataTypes.STRING(256),
+                allowNull: false,
+            },
+        }, {
+            sequelize: this.connection,
+            tableName: "captchas",
         });
     }
 }
