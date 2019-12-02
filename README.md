@@ -32,6 +32,15 @@ If you want to run your own instance of the bot the following packages are requi
 * npm
 * postgres >=11
 
+Make sure to create the gatekeeper database.
+
+```
+git clone https://github.com/Kruhlmann/gatekeeper
+cd gatekeeper
+npm install
+npm run migrate
+```
+
 You must rename [config.json.example](config.json.example) to `config.json` and fill it in with the required details. 
 
 #### Environment variables
