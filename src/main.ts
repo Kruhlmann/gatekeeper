@@ -16,6 +16,7 @@ const req_env_vars = [
     "GATEKEEPER_DB_USR",
     "GATEKEEPER_DB_PWD",
     "GATEKEEPER_DB_NAM",
+    "GATEKEEPER_DISCORD_TOKEN",
 ];
 
 // Global exception handling.
@@ -108,9 +109,8 @@ function validate_environment(variable_keys: string[]): boolean {
 
     // Init discord virtual client.
     const discord_client = new discord.Client();
-    const dicord_token = config.deployment_mode === "production"
-        ? config.discord_bot_token.production
-        : config.discord_bot_token.development;
+    const dicord_token = process.env.GATEKEEPER_DISCORD_TOKEN;
+
     // Init database.
     db = psql.connect()
 

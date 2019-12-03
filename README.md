@@ -48,3 +48,4 @@ You must rename [config.json.example](config.json.example) to `config.json` and 
 * `GATEKEEPER_DB_USR` postgres database user
 * `GATEKEEPER_DB_PWD` postgres database user password
 * `GATEKEEPER_DB_NAM` postgres database name
+* `GATEKEEPER_DISCORD_TOKEN` discord API token
