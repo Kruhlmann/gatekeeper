@@ -38,7 +38,8 @@ Make sure to create the gatekeeper database.
 git clone https://github.com/Kruhlmann/gatekeeper
 cd gatekeeper
 npm install
-npm run migrate
+chmod +x upgradedb
+./upgradedb
 ```
 
 You must rename [config.json.example](config.json.example) to `config.json` and fill it in with the required details. 
