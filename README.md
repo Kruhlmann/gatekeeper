@@ -28,9 +28,9 @@ If you want to run your own instance of the bot the following packages are requi
 * build-essential
 * make
 * automake
-* nodejs
+* nodejs >=10.16.0
 * npm
-* postgres >=11
+* postgres >=11.5
 
 Make sure to create the gatekeeper database.
 
