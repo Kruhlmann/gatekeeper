@@ -35,6 +35,12 @@ If you want to run your own instance of the bot the following packages are requi
 Make sure to create the gatekeeper database.
 
 ```
+postgres=# CREATE DATABASE gatekeeper;
+CREATE DATABASE
+postgres=# \q
+```
+
+```bash
 git clone https://github.com/Kruhlmann/gatekeeper
 cd gatekeeper
 npm install
