@@ -6,7 +6,9 @@
     "start": "npm run build && node dist/src/main.js",
     "build": "tsc",
     "watch": "tsc -w",
-    "migrate": "node-pg-migrate"
+    "migrate": "node-pg-migrate",
+    "upgrade": "DATABASE_URL=postgres://$GATEKEEPER_DB_USR:$GATEKEEPER_DB_PWD@localhost:5432/$GATEKEEPER_DB_NAM npm run migrate up",
+    "downgrade": "DATABASE_URL=postgres://$GATEKEEPER_DB_USR:$GATEKEEPER_DB_PWD@localhost:5432/$GATEKEEPER_DB_NAM npm run migrate down"
   },
   "repository": {
     "type": "git",

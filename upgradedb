@@ -1,2 +1,0 @@
-#!/usr/bin/env sh
-DATABASE_URL=postgres://$GATEKEEPER_DB_USR:$GATEKEEPER_DB_PWD@localhost:5432/$GATEKEEPER_DB_NAM npm run migrate up
