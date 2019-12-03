@@ -12,6 +12,12 @@ import * as captcha_generator from "./captchas";
 import * as psql from "./db"
 import { Op } from "sequelize";
 
+const req_env_vars = [
+    "GATEKEEPER_DB_USR",
+    "GATEKEEPER_DB_PWD",
+    "GATEKEEPER_DB_NAM",
+];
+
 // Global exception handling.
 process.on("uncaughtException", handle_exception);
 process.on("unhandledRejection", handle_exception);
@@ -73,8 +79,33 @@ function role_routine(guild: discord.Guild, read_role: discord.Role): void {
     });
 }
 
+/**
+ * Ensures the prescense of all required environment variables. If any are
+ * missing the program closes.
+ *
+ * @param variable_keys - Names of required environment variables.
+ */
+function validate_environment(variable_keys: string[]): boolean {
+    let valid = true;
+    for (const env_var of variable_keys) {
+        if (!process.env.hasOwnProperty(env_var)) {
+            log(`Missing environment variable: ${env_var}`, LoggingLevel.ERR)
+            valid = false;
+        } else {
+            log(`Found required environment variable ${env_var}`, LoggingLevel.DEV)
+        }
+    }
+
+    return valid;
+}
+
 // Main fucntion.
 (async () => {
+    // Check for all environment variables.
+    if(!validate_environment(req_env_vars)) {
+        process.exit(1);
+    }
+
     // Init discord virtual client.
     const discord_client = new discord.Client();
     const dicord_token = config.deployment_mode === "production"
