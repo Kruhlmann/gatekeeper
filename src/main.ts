@@ -9,7 +9,7 @@ import { handle_exception, log } from "./io";
 import { LoggingLevel } from "./typings/types";
 import * as config from "../config.json";
 import * as captcha_generator from "./captchas";
-import * as psql from "./db"
+import * as psql from "./db";
 import { Op } from "sequelize";
 
 const req_env_vars = [

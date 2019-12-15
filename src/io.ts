@@ -56,8 +56,8 @@ export function handle_exception(error: Error | string): void {
  */
 export function log(msg: string, level: LoggingLevel = LoggingLevel.INF): void {
     const now = new Date();
-    const now_locale = now.toLocaleString(config.locale || "en-GB", {
-        timeZone: config.time_zone || "UTC",
+    const now_locale = now.toLocaleString("en-GB", {
+        timeZone: "UTC",
     });
     const formatted_message = logging_formats[level](msg, now_locale);
     const d = `${months[now.getMonth()]}_${now.getDate()}_${now.getFullYear()}`;
