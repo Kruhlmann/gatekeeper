@@ -1,5 +1,6 @@
 import * as adjectives from "../res/adjectives.json";
 import * as nouns from "../res/nouns.json";
+import { Scenario, CombatScenario, Captcha } from "./typings/types";
 
 const sexes = ["non-binary", "male", "female"];
 const races = ["orc", "human", "troll", "gnome"];
@@ -35,12 +36,7 @@ function arr_random(arr: any[]): any {
  *
  * @returns - Scenario data.
  */
-function make_scenario(): {
-    sex: string,
-    race: string,
-    sex_prefix: string,
-    guild_name: string,
-} {
+function make_scenario(): Scenario {
     const sex = arr_random(sexes) as string;
     const race = arr_random(races) as string;
     const sex_prefix = sex === "male" && race === "human" ? "bald" : "";
@@ -51,7 +47,7 @@ function make_scenario(): {
     return { sex, race, sex_prefix, guild_name }
 }
 
-function make_combat_scenario() {
+function make_combat_scenario(): CombatScenario {
     const scenario = make_scenario();
     const weapon_subtype = arr_random(weapon_subtypes) as string;
     let weapon_type = arr_random(weapon_types) as string;
@@ -96,19 +92,22 @@ function make_combat_scenario() {
  *
  * @returns - Message content object.
  */
-function hit_cap_generator(): {answer: string, seed: string, text: string} {
-    const scenario = make_combat_scenario();
-
-    const mitigation_type = arr_random([false, "dodge", "block", "glancing"]);
-    const yellow_hits = Math.random() < 0.5;
-    const front = Math.random() < 0.5 || mitigation_type === "block";
+export function hit_cap_generator(_scenario: CombatScenario,
+                           _mitigation_type: string,
+                           _yellow_hits: boolean,
+                           _front: boolean,
+): Captcha {
+    const scenario = _scenario ? _scenario : make_combat_scenario();
+    const mitigation_type = _mitigation_type ? _mitigation_type : arr_random(["none", "dodge", "block", "glancing"]);
+    const yellow_hits = _yellow_hits !== undefined ? _yellow_hits : Math.random() < 0.5;
+    const front = _front !== undefined ? _front || mitigation_type === "block" : Math.random() < 0.5 || mitigation_type === "block";
     const miss_modifier = (scenario.skill_delta > 10 ? 0.2 : 0.1);
 
     let answer: number;
     let answer_example: string;
     let attack_query: string;
 
-    if (mitigation_type) {
+    if (mitigation_type !== "none") {
         // Mitigation type is either block, dodge, parry or glancing.
         switch (mitigation_type) {
             case "parry":
@@ -168,7 +167,7 @@ export const generators: Function[] = [
  *
  * @returns - Generator function.
  */
-export function generate(): {answer: string, seed: string, text: string} {
+export function generate(): Captcha {
     return arr_random(generators)()
 }
 
