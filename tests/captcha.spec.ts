@@ -52,17 +52,8 @@ const troll_dw = {
 const scenarios = {
     hit: {
         orc: {
-            front: {
-                white: {
-                    th: { ...orc_scenario_template, weapon: orc_th },
-                    dw: { ...orc_scenario_template, weapon: orc_dw },
-                },
-                yellow: {},
-            },
-            behind: {
-                white: {},
-                yellow: {},
-            },
+            th: { ...orc_scenario_template, weapon: orc_th },
+            dw: { ...orc_scenario_template, weapon: orc_dw },
         },
         noorc: {
 
@@ -77,7 +68,7 @@ describe("CAPTCHAs", () => {
                 describe("White hits", () => {
                     describe("Two-handed", () => {
                         it("should have the answer 6", () => {
-                            const scenario = scenarios.hit.orc.front.white.th;
+                            const scenario = scenarios.hit.orc.th;
                             const answer = hit_cap_generator(scenario, "none", false, true).answer;
                             expect(answer).to.equal("6");
                         });
@@ -85,7 +76,7 @@ describe("CAPTCHAs", () => {
 
                     describe("Dual wielding", () => {
                         it("should have the answer 24.7", () => {
-                            const scenario = scenarios.hit.orc.front.white.dw;
+                            const scenario = scenarios.hit.orc.dw;
                             const answer = hit_cap_generator(scenario, "none", false, true).answer;
                             //expect(answer).to.equal("24.7");
                             // TODO
@@ -96,7 +87,7 @@ describe("CAPTCHAs", () => {
                 describe("Yellow hits", () => {
                     describe("Two-handed", () => {
                         it("should have the answer 6", () => {
-                            const scenario = scenarios.hit.orc.front.white.th;
+                            const scenario = scenarios.hit.orc.th;
                             const answer = hit_cap_generator(scenario, "none", true, true).answer;
                             expect(answer).to.equal("6");
                         });
@@ -104,7 +95,7 @@ describe("CAPTCHAs", () => {
 
                     describe("Dual wielding", () => {
                         it("should have the answer 6", () => {
-                            const scenario = scenarios.hit.orc.front.white.dw;
+                            const scenario = scenarios.hit.orc.dw;
                             const answer = hit_cap_generator(scenario, "none", true, true).answer;
                             expect(answer).to.equal("6");
                         });
@@ -116,7 +107,7 @@ describe("CAPTCHAs", () => {
                 describe("White hits", () => {
                     describe("Two-handed", () => {
                         it("should have the answer 6", () => {
-                            const scenario = scenarios.hit.orc.front.white.th;
+                            const scenario = scenarios.hit.orc.th;
                             const answer = hit_cap_generator(scenario, "none", false, false).answer;
                             expect(answer).to.equal("6");
                         });
@@ -124,7 +115,7 @@ describe("CAPTCHAs", () => {
 
                     describe("Dual wielding", () => {
                         it("should have the answer 24.7", () => {
-                            const scenario = scenarios.hit.orc.front.white.dw;
+                            const scenario = scenarios.hit.orc.dw;
                             const answer = hit_cap_generator(scenario, "none", false, false).answer;
                             //expect(answer).to.equal("24.7");
                             // TODO
@@ -135,7 +126,7 @@ describe("CAPTCHAs", () => {
                 describe("Yellow hits", () => {
                     describe("Two-handed", () => {
                         it("should have the answer 6", () => {
-                            const scenario = scenarios.hit.orc.front.white.th;
+                            const scenario = scenarios.hit.orc.th;
                             const answer = hit_cap_generator(scenario, "none", true, false).answer;
                             expect(answer).to.equal("6");
                         });
@@ -143,7 +134,7 @@ describe("CAPTCHAs", () => {
 
                     describe("Dual wielding", () => {
                         it("should have the answer 6", () => {
-                            const scenario = scenarios.hit.orc.front.white.dw;
+                            const scenario = scenarios.hit.orc.dw;
                             const answer = hit_cap_generator(scenario, "none", true, false).answer;
                             expect(answer).to.equal("6");
                         });
@@ -153,6 +144,117 @@ describe("CAPTCHAs", () => {
         });
 
         describe("Non-orc", () => {
+            describe("Front", () => {
+                describe("Yellow hits", () => {
+                    describe("Two-handed", () => {
+                        it("should have the answer X", () => {
+                            expect(1).to.equal(1);
+                        });
+                    });
+
+                    describe("Dual wielding", () => {
+                        it("should have the answer X", () => {
+                            expect(1).to.equal(1);
+                        });
+                    });
+                });
+
+                describe("White hits", () => {
+                    describe("Two-handed", () => {
+                        it("should have the answer X", () => {
+                            expect(1).to.equal(1);
+                        });
+                    });
+
+                    describe("Dual wielding", () => {
+                        it("should have the answer X", () => {
+                            expect(1).to.equal(1);
+                        });
+                    });
+                });
+            });
+
+            describe("Behind", () => {
+                describe("Yellow hits", () => {
+                    describe("Two-handed", () => {
+                        it("should have the answer X", () => {
+                            expect(1).to.equal(1);
+                        });
+                    });
+
+                    describe("Dual wielding", () => {
+                        it("should have the answer X", () => {
+                            expect(1).to.equal(1);
+                        });
+                    });
+                });
+
+                describe("White hits", () => {
+                    describe("Two-handed", () => {
+                        it("should have the answer X", () => {
+                            expect(1).to.equal(1);
+                        });
+                    });
+
+                    describe("Dual wielding", () => {
+                        it("should have the answer X", () => {
+                            expect(1).to.equal(1);
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+    describe("Parry", () => {
+        describe("Orc", () => {
+            it("should have the answer X", () => {
+                expect(1).to.equal(1);
+            });
+        });
+        describe("Non-orc", () => {
+            it("should have the answer X", () => {
+                expect(1).to.equal(1);
+            });
+        });
+    });
+
+    describe("Dodge", () => {
+        describe("Orc", () => {
+            it("should have the answer X", () => {
+                expect(1).to.equal(1);
+            });
+        });
+        describe("Non-orc", () => {
+            it("should have the answer X", () => {
+                expect(1).to.equal(1);
+            });
+        });
+    });
+
+    describe("Block", () => {
+        describe("Orc", () => {
+            it("should have the answer X", () => {
+                expect(1).to.equal(1);
+            });
+        });
+        describe("Non-orc", () => {
+            it("should have the answer X", () => {
+                expect(1).to.equal(1);
+            });
+        });
+    });
+
+    describe("Glancing", () => {
+        describe("Orc", () => {
+            it("should have the answer X", () => {
+                expect(1).to.equal(1);
+            });
+        });
+        describe("Non-orc", () => {
+            it("should have the answer X", () => {
+                expect(1).to.equal(1);
+            });
         });
     });
 });
