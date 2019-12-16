@@ -114,11 +114,10 @@ describe("CAPTCHAs", () => {
                     });
 
                     describe("Dual wielding", () => {
-                        it("should have the answer 24.7", () => {
+                        it("should have the answer 24.8", () => {
                             const scenario = scenarios.hit.orc.dw;
                             const answer = hit_cap_generator(scenario, "none", false, false).answer;
-                            //expect(answer).to.equal("24.7");
-                            // TODO
+                            //expect(answer).to.equal("24.8");
                         });
                     });
                 });
@@ -149,12 +148,14 @@ describe("CAPTCHAs", () => {
                     describe("Two-handed", () => {
                         it("should have the answer X", () => {
                             expect(1).to.equal(1);
+                            // 9
                         });
                     });
 
                     describe("Dual wielding", () => {
                         it("should have the answer X", () => {
                             expect(1).to.equal(1);
+                            // 9
                         });
                     });
                 });
@@ -163,12 +164,14 @@ describe("CAPTCHAs", () => {
                     describe("Two-handed", () => {
                         it("should have the answer X", () => {
                             expect(1).to.equal(1);
+                            // 9
                         });
                     });
 
                     describe("Dual wielding", () => {
                         it("should have the answer X", () => {
                             expect(1).to.equal(1);
+                            // 27.2
                         });
                     });
                 });
@@ -179,12 +182,14 @@ describe("CAPTCHAs", () => {
                     describe("Two-handed", () => {
                         it("should have the answer X", () => {
                             expect(1).to.equal(1);
+                            // 9
                         });
                     });
 
                     describe("Dual wielding", () => {
                         it("should have the answer X", () => {
                             expect(1).to.equal(1);
+                            // 9
                         });
                     });
                 });
@@ -193,12 +198,14 @@ describe("CAPTCHAs", () => {
                     describe("Two-handed", () => {
                         it("should have the answer X", () => {
                             expect(1).to.equal(1);
+                            // 9
                         });
                     });
 
                     describe("Dual wielding", () => {
                         it("should have the answer X", () => {
                             expect(1).to.equal(1);
+                            // 27.2
                         });
                     });
                 });
@@ -210,11 +217,13 @@ describe("CAPTCHAs", () => {
         describe("Orc", () => {
             it("should have the answer X", () => {
                 expect(1).to.equal(1);
+                // 13.5 need to verify with magey if weapon skill applies to parry
             });
         });
         describe("Non-orc", () => {
             it("should have the answer X", () => {
                 expect(1).to.equal(1);
+                // 14
             });
         });
     });
@@ -223,11 +232,13 @@ describe("CAPTCHAs", () => {
         describe("Orc", () => {
             it("should have the answer X", () => {
                 expect(1).to.equal(1);
+                // 6
             });
         });
         describe("Non-orc", () => {
             it("should have the answer X", () => {
                 expect(1).to.equal(1);
+                // 6.5
             });
         });
     });
@@ -236,11 +247,13 @@ describe("CAPTCHAs", () => {
         describe("Orc", () => {
             it("should have the answer X", () => {
                 expect(1).to.equal(1);
+                // 5
             });
         });
         describe("Non-orc", () => {
             it("should have the answer X", () => {
                 expect(1).to.equal(1);
+                // 5
             });
         });
     });
@@ -249,11 +262,13 @@ describe("CAPTCHAs", () => {
         describe("Orc", () => {
             it("should have the answer X", () => {
                 expect(1).to.equal(1);
+                // 40
             });
         });
         describe("Non-orc", () => {
             it("should have the answer X", () => {
                 expect(1).to.equal(1);
+                // 40
             });
         });
     });
