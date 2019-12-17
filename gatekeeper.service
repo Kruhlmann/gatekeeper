@@ -14,6 +14,10 @@ Restart=always
 RestartSec=10
 CPUAccounting=true
 CPUQuota=20%
+Environment="GATEKEEPER_DB_USR=<db_user>"
+Environment="GATEKEEPER_DB_PWD=<db_password>"
+Environment="GATEKEEPER_DB_NAM=<db_name>"
+Environment="GATEKEEPER_DISCORD_TOKEN=<discord_token>"
 
 [Install]
 WantedBy=multi-user.target
