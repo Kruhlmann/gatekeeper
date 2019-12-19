@@ -101,7 +101,8 @@ export function hit_cap_generator(_scenario: CombatScenario,
     const mitigation_type = _mitigation_type ? _mitigation_type : arr_random(["none", "dodge", "block", "glancing"]);
     const yellow_hits = _yellow_hits !== undefined ? _yellow_hits : Math.random() < 0.5;
     const front = _front !== undefined ? _front || mitigation_type === "block" : Math.random() < 0.5 || mitigation_type === "block";
-    const miss_modifier = (scenario.skill_delta > 10 ? 0.2 : 0.1);
+    const miss_modifier = scenario.skill_delta > 10 ? 0.2 : 0.1;
+    const miss_pentalty = scenario.skill_delta > 10 ? 1 : 0;
 
     let answer: number;
     let answer_example: string;
@@ -140,10 +141,15 @@ export function hit_cap_generator(_scenario: CombatScenario,
         }
     } else {
         // No mitigation type means hit cap calculation.
-        const miss_chance = Math.ceil(5 + scenario.skill_delta * miss_modifier);
-        answer = miss_chance;
-        attack_query = "your hit cap (rounded up)?"
-        answer_example = "13";
+        let miss_chance = Math.ceil(5 + scenario.skill_delta * miss_modifier);
+        // DWMissChance = NormalMissChance * 0.8 + 20%.
+        // This only applies to white hits.
+        if (scenario.weapon.subtype === "dual wielded" && !yellow_hits) {
+            miss_chance = miss_chance * 0.8 + 20;
+        }
+        answer = miss_chance + miss_pentalty;
+        attack_query = "your hit cap (rounded up to nearest 1/10th)?"
+        answer_example = "13.1";
     }
 
     // Message text.
@@ -151,7 +157,7 @@ export function hit_cap_generator(_scenario: CombatScenario,
     const question = `Given these parameters what is ${attack_query}\n\nAnswer example: \`${answer_example}\` (answer is ${answer} btw)`;
     //  **${yellow_hits ? "yellow" : "white"}**
     return {
-        answer: `${answer}`,
+        answer: answer.toFixed(1),
         seed: (Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 32) + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 32)).toUpperCase(),
         text: `${scenario_txt}\n\n${question}`,
     };

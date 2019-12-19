@@ -37,13 +37,13 @@ const noorc_scenario_template = {
     skill_delta: 15,
 }
 
-const troll_th = {
+const noorc_th = {
     type: "axe",
     subtype: "2 handed",
     skill: 300,
 }
 
-const troll_dw = {
+const noorc_dw = {
     type: "axe",
     subtype: "dual wielded",
     skill: 300,
@@ -56,7 +56,8 @@ const scenarios = {
             dw: { ...orc_scenario_template, weapon: orc_dw },
         },
         noorc: {
-
+            th: { ...noorc_scenario_template, weapon: noorc_th },
+            dw: { ...noorc_scenario_template, weapon: noorc_dw },
         }
     },
 };
@@ -67,37 +68,36 @@ describe("CAPTCHAs", () => {
             describe("Front", () => {
                 describe("White hits", () => {
                     describe("Two-handed", () => {
-                        it("should have the answer 6", () => {
+                        it("should have the answer 6.0", () => {
                             const scenario = scenarios.hit.orc.th;
                             const answer = hit_cap_generator(scenario, "none", false, true).answer;
-                            expect(answer).to.equal("6");
+                            expect(answer).to.equal("6.0");
                         });
                     });
 
                     describe("Dual wielding", () => {
-                        it("should have the answer 24.7", () => {
+                        it("should have the answer 24.8", () => {
                             const scenario = scenarios.hit.orc.dw;
                             const answer = hit_cap_generator(scenario, "none", false, true).answer;
-                            //expect(answer).to.equal("24.7");
-                            // TODO
+                            expect(answer).to.equal("24.8");
                         });
                     });
                 });
 
                 describe("Yellow hits", () => {
                     describe("Two-handed", () => {
-                        it("should have the answer 6", () => {
+                        it("should have the answer 6.0", () => {
                             const scenario = scenarios.hit.orc.th;
                             const answer = hit_cap_generator(scenario, "none", true, true).answer;
-                            expect(answer).to.equal("6");
+                            expect(answer).to.equal("6.0");
                         });
                     });
 
                     describe("Dual wielding", () => {
-                        it("should have the answer 6", () => {
+                        it("should have the answer 6.0", () => {
                             const scenario = scenarios.hit.orc.dw;
                             const answer = hit_cap_generator(scenario, "none", true, true).answer;
-                            expect(answer).to.equal("6");
+                            expect(answer).to.equal("6.0");
                         });
                     });
                 });
@@ -106,10 +106,10 @@ describe("CAPTCHAs", () => {
             describe("Behind", () => {
                 describe("White hits", () => {
                     describe("Two-handed", () => {
-                        it("should have the answer 6", () => {
+                        it("should have the answer 6.0", () => {
                             const scenario = scenarios.hit.orc.th;
                             const answer = hit_cap_generator(scenario, "none", false, false).answer;
-                            expect(answer).to.equal("6");
+                            expect(answer).to.equal("6.0");
                         });
                     });
 
@@ -117,25 +117,25 @@ describe("CAPTCHAs", () => {
                         it("should have the answer 24.8", () => {
                             const scenario = scenarios.hit.orc.dw;
                             const answer = hit_cap_generator(scenario, "none", false, false).answer;
-                            //expect(answer).to.equal("24.8");
+                            expect(answer).to.equal("24.8");
                         });
                     });
                 });
 
                 describe("Yellow hits", () => {
                     describe("Two-handed", () => {
-                        it("should have the answer 6", () => {
+                        it("should have the answer 6.0", () => {
                             const scenario = scenarios.hit.orc.th;
                             const answer = hit_cap_generator(scenario, "none", true, false).answer;
-                            expect(answer).to.equal("6");
+                            expect(answer).to.equal("6.0");
                         });
                     });
 
                     describe("Dual wielding", () => {
-                        it("should have the answer 6", () => {
+                        it("should have the answer 6.0", () => {
                             const scenario = scenarios.hit.orc.dw;
                             const answer = hit_cap_generator(scenario, "none", true, false).answer;
-                            expect(answer).to.equal("6");
+                            expect(answer).to.equal("6.0");
                         });
                     });
                 });
@@ -146,32 +146,36 @@ describe("CAPTCHAs", () => {
             describe("Front", () => {
                 describe("Yellow hits", () => {
                     describe("Two-handed", () => {
-                        it("should have the answer X", () => {
-                            expect(1).to.equal(1);
-                            // 9
+                        it("should have the answer 9.0", () => {
+                            const scenario = scenarios.hit.noorc.th;
+                            const answer = hit_cap_generator(scenario, "none", true, true).answer;
+                            expect(answer).to.equal("9.0");
                         });
                     });
 
                     describe("Dual wielding", () => {
-                        it("should have the answer X", () => {
-                            expect(1).to.equal(1);
-                            // 9
+                        it("should have the answer 9.0", () => {
+                            const scenario = scenarios.hit.noorc.dw;
+                            const answer = hit_cap_generator(scenario, "none", true, true).answer;
+                            expect(answer).to.equal("9.0");
                         });
                     });
                 });
 
                 describe("White hits", () => {
                     describe("Two-handed", () => {
-                        it("should have the answer X", () => {
-                            expect(1).to.equal(1);
-                            // 9
+                        it("should have the answer 9.0", () => {
+                            const scenario = scenarios.hit.noorc.th;
+                            const answer = hit_cap_generator(scenario, "none", false, true).answer;
+                            expect(answer).to.equal("9.0");
                         });
                     });
 
                     describe("Dual wielding", () => {
-                        it("should have the answer X", () => {
-                            expect(1).to.equal(1);
-                            // 27.2
+                        it("should have the answer 27.4", () => {
+                            const scenario = scenarios.hit.noorc.dw;
+                            const answer = hit_cap_generator(scenario, "none", false, true).answer;
+                            expect(answer).to.equal("27.4");
                         });
                     });
                 });
@@ -180,32 +184,36 @@ describe("CAPTCHAs", () => {
             describe("Behind", () => {
                 describe("Yellow hits", () => {
                     describe("Two-handed", () => {
-                        it("should have the answer X", () => {
-                            expect(1).to.equal(1);
-                            // 9
+                        it("should have the answer 9.0", () => {
+                            const scenario = scenarios.hit.noorc.th;
+                            const answer = hit_cap_generator(scenario, "none", true, false).answer;
+                            expect(answer).to.equal("9.0");
                         });
                     });
 
                     describe("Dual wielding", () => {
-                        it("should have the answer X", () => {
-                            expect(1).to.equal(1);
-                            // 9
+                        it("should have the answer 9.0", () => {
+                            const scenario = scenarios.hit.noorc.dw;
+                            const answer = hit_cap_generator(scenario, "none", true, false).answer;
+                            expect(answer).to.equal("9.0");
                         });
                     });
                 });
 
                 describe("White hits", () => {
                     describe("Two-handed", () => {
-                        it("should have the answer X", () => {
-                            expect(1).to.equal(1);
-                            // 9
+                        it("should have the answer 9.0", () => {
+                            const scenario = scenarios.hit.noorc.th;
+                            const answer = hit_cap_generator(scenario, "none", false, false).answer;
+                            expect(answer).to.equal("9.0");
                         });
                     });
 
                     describe("Dual wielding", () => {
-                        it("should have the answer X", () => {
-                            expect(1).to.equal(1);
-                            // 27.2
+                        it("should have the answer 27.4", () => {
+                            const scenario = scenarios.hit.noorc.dw;
+                            const answer = hit_cap_generator(scenario, "none", false, false).answer;
+                            expect(answer).to.equal("27.4");
                         });
                     });
                 });
@@ -230,45 +238,51 @@ describe("CAPTCHAs", () => {
 
     describe("Dodge", () => {
         describe("Orc", () => {
-            it("should have the answer X", () => {
-                expect(1).to.equal(1);
-                // 6
+            it("should have the answer 6.0", () => {
+                const scenario = scenarios.hit.orc.th;
+                const answer = hit_cap_generator(scenario, "dodge", false, false).answer;
+                expect(answer).to.equal("6.0");
             });
         });
         describe("Non-orc", () => {
-            it("should have the answer X", () => {
-                expect(1).to.equal(1);
-                // 6.5
+            it("should have the answer 6.5", () => {
+                const scenario = scenarios.hit.noorc.th;
+                const answer = hit_cap_generator(scenario, "dodge", false, false).answer;
+                expect(answer).to.equal("6.5");
             });
         });
     });
 
     describe("Block", () => {
         describe("Orc", () => {
-            it("should have the answer X", () => {
-                expect(1).to.equal(1);
-                // 5
+            it("should have the answer 5.0", () => {
+                const scenario = scenarios.hit.orc.th;
+                const answer = hit_cap_generator(scenario, "block", false, false).answer;
+                expect(answer).to.equal("5.0");
             });
         });
         describe("Non-orc", () => {
-            it("should have the answer X", () => {
-                expect(1).to.equal(1);
-                // 5
+            it("should have the answer 5.0", () => {
+                const scenario = scenarios.hit.noorc.th;
+                const answer = hit_cap_generator(scenario, "block", false, false).answer;
+                expect(answer).to.equal("5.0");
             });
         });
     });
 
     describe("Glancing", () => {
         describe("Orc", () => {
-            it("should have the answer X", () => {
-                expect(1).to.equal(1);
-                // 40
+            it("should have the answer 40.0", () => {
+                const scenario = scenarios.hit.orc.th;
+                const answer = hit_cap_generator(scenario, "glancing", false, false).answer;
+                expect(answer).to.equal("40.0");
             });
         });
         describe("Non-orc", () => {
-            it("should have the answer X", () => {
-                expect(1).to.equal(1);
-                // 40
+            it("should have the answer 40.0", () => {
+                const scenario = scenarios.hit.noorc.th;
+                const answer = hit_cap_generator(scenario, "glancing", false, false).answer;
+                expect(answer).to.equal("40.0");
             });
         });
     });
