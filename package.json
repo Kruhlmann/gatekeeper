@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/Kruhlmann/gatekeeper#readme",
   "dependencies": {
+    "@sentry/node": "^5.10.2",
     "@types/node": "^12.11.7",
     "@types/sequelize": "^4.28.8",
     "discord.js": "^11.5.1",

@@ -11,6 +11,7 @@ import * as config from "../config.json";
 import * as captcha_generator from "./captchas";
 import * as psql from "./db";
 import { Op } from "sequelize";
+import * as Sentry from "@sentry/node";
 
 const req_env_vars = [
     "GATEKEEPER_DB_USR",
@@ -105,6 +106,12 @@ function validate_environment(variable_keys: string[]): boolean {
     // Check for all environment variables.
     if(!validate_environment(req_env_vars)) {
         process.exit(1);
+    }
+
+    if (process.env.hasOwnProperty("GATEKEEPER_SENTRY_DSN")) {
+        Sentry.init({ dsn: process.env.GATEKEEPER_SENTRY_DSN });
+    } else {
+        log("No sentry DSN provided. Sentry logging is disabled.", LoggingLevel.WAR)
     }
 
     // Init discord virtual client.
