@@ -11,14 +11,14 @@ const min_lvl = 57;
 const max_lvl = 63;
 
 function title_case(str: string): string {
-   let splitStr = str.toLowerCase().split(' ');
+   let splitStr = str.toLowerCase().split(" ");
    for (let i = 0; i < splitStr.length; i++) {
        // You do not need to check if i is larger than splitStr length, as your for does that for you
        // Assign it back to the array
        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
    }
    // Directly return the joined string
-   return splitStr.join(' ');
+   return splitStr.join(" ");
 }
 
 /**
@@ -157,7 +157,7 @@ export function hit_cap_generator(_scenario: CombatScenario,
     const question = `Given these parameters what is ${attack_query}\n\nAnswer example: \`${answer_example}\``;
     //  **${yellow_hits ? "yellow" : "white"}**
     return {
-        answer: answer.toFixed(1),
+        answer: Math.max(0, answer).toFixed(1),
         seed: (Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 32) + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 32)).toUpperCase(),
         text: `${scenario_txt}\n\n${question}`,
     };
