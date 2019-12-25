@@ -133,9 +133,28 @@ function validate_environment(variable_keys: string[]): boolean {
         if (message.channel.type !== "dm") {
             if (message.channel.id === config.trigger_channel_id && message.content === "!captcha") {
                 // TODO: Don't send message to people who already have write roles.
-                send_captcha(user);
+                if (config.deployment_mode === "production") {
+                    psql.Captcha.findOne({
+                        order: ["createdAt"],
+                        where: {
+                            [Op.and]: [{ user_id: user.id }, { active: true }],
+                        },
+                    }).then((captcha) => {
+                        if (captcha) {
+                            const created = new Date(captcha.createdAt);
+                            const expires = new Date(created.getTime() + 24 * 60 * 60 * 1000)
+                            if (expires >= new Date()) {
+                                message.reply("You already have a pending captcha. You can request a new one 24 hours after the active CAPTCHA was requested.");
+                                return;
+                            }
+                        }
+                        send_captcha(user)
+                    });
+                } else {
+                    // In non-production mode ignore the cooldown of captchas.
+                    send_captcha(user);
+                }
             }
-            return;
         }
 
         const channel = message.channel as discord.DMChannel;
@@ -153,7 +172,6 @@ function validate_environment(variable_keys: string[]): boolean {
         messages_promise.then((messages: Map<any, discord.Message>) => {
             for (const [m_id, m] of messages.entries()) {
                 if (m.author.id !== discord_client.user.id || !m.content.match(/Your ID: `[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`/g)) {
-                    console.log("Skipping msg")
                     continue;
                 }
                 const id = m.content.split(" ")[2].replace(/`/g, "");
