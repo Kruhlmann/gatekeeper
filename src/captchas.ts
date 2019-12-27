@@ -115,25 +115,25 @@ export function hit_cap_generator(_scenario: CombatScenario,
                 // TODO: This has no formula yet.
                 const parry_chance = 10;
                 answer = Math.ceil(parry_chance / 10) * 10;
-                attack_query = "the chance that your attacks are parried (rounded up to nearest 1/10th)?";
+                attack_query = "the chance that your attacks are parried (**rounded up to nearest 1/10th**)?";
                 answer_example = "19.4";
                 break;
             case "block":
                 const block_chance = front ? Math.min(5, 5 + scenario.skill_delta * 0.1) : 0;
                 answer = block_chance;
-                attack_query = "the chance that your attacks are blocked (rounded up to nearest 1/10th)?";
+                attack_query = "the chance that your attacks are blocked (**rounded up to nearest 1/10th**)?";
                 answer_example = "14.2";
                 break;
             case "dodge":
                 const dodge_chance = 5 + scenario.skill_delta * 0.1;
                 answer = dodge_chance;
-                attack_query = "the chance that your attacks are dodged (rounded up to nearest 1/10th)?";
+                attack_query = "the chance that your attacks are dodged (**rounded up to nearest 1/10th**)?";
                 answer_example = "7.2";
                 break;
             case "glancing":
                 const glancing_chance = 10 + ((scenario.target.defense - Math.min(300, scenario.weapon.skill)) * 2);
                 answer = Math.ceil(glancing_chance / 10) * 10;
-                attack_query = "the chance that you land a glancing blow (rounded up to nearest 1/10th)?";
+                attack_query = "the chance that you land a glancing blow (**rounded up to nearest 1/10th**)?";
                 answer_example = "5.2";
                 break;
             default:
