@@ -188,7 +188,8 @@ function validate_environment(variable_keys: string[]): boolean {
                         [Op.and]: [{ id: id }, { active: true }]
                     }
                 }).then((c: psql.Captcha) => {
-                    if (c.answer === message.content) {
+                    const f_answer = parseFloat(message.content);
+                    if (c.answer === f_answer.toFixed(1)) {
                         user.addRole(write_role);
                         const usr_str = `<${user.user.username}:${user.id}>`;
                         const role_str = `<${write_role.name}:${write_role.id}>`;
