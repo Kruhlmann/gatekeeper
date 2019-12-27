@@ -196,11 +196,11 @@ function validate_environment(variable_keys: string[]): boolean {
                         message.channel.send(`\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`);
                         c.update({ active: false });
                     } else {
-                        message.channel.send(`\`${message.content}\` is not correct.`)
+                        message.channel.send(`\`${message.content}\` is not correct.`);
                     }
                 }).catch((error) => {
-                    log(error.stack, LoggingLevel.ERR)
-                    message.channel.send("I can't find an active captcha for you.")
+                    log(error.stack, LoggingLevel.ERR);
+                    message.channel.send("I can't find an active captcha for you.");
                 });
 
                 break;
