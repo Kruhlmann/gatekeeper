@@ -156,6 +156,8 @@ export function hit_cap_generator(_scenario: CombatScenario,
     const scenario_txt = `You (a **${scenario.sex_prefix !== "" ? `${scenario.sex_prefix} ` : ""}${scenario.sex} ${scenario.race}** DPS fury warrior in **<${scenario.guild_name}>**) is attacking a level **${scenario.target.level}** **${scenario.target.name}** from **${front ? "the front" : "behind"}** using your **${scenario.weapon.subtype} ${scenario.weapon.type}${scenario.weapon.subtype == "dual wielded" ? "s" : ""}**`;
     const question = `Given these parameters what is ${attack_query}\n\nAnswer example: \`${answer_example}\``;
     //  **${yellow_hits ? "yellow" : "white"}**
+    console.log(answer.toFixed(1))
+    console.log(Math.max(0, answer).toFixed(1))
     return {
         answer: Math.max(0, answer).toFixed(1),
         seed: (Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 32) + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 32)).toUpperCase(),
