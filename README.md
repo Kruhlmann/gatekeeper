@@ -7,12 +7,12 @@
 ## Setup
 
 <p align="center">
-  <a href="https://discordapp.com/oauth2/authorize?client_id=637062618535821312&scope=bot&permissions=268435456">
+  <a href="https://discordapp.com/oauth2/authorize?client_id=660177114846199808&scope=bot&permissions=268435456">
     <img src="doc/connect.png" />
   </a>
 </p>
 
-To invite the bot click [this link](https://discordapp.com/oauth2/authorize?client_id=637062618535821312&scope=bot&permissions=268435456) (or the image above) as the server owner. Invite the bot to the server of your choice and, if necessary, promote it to allow for administrative tasks.
+To invite the bot click [this link](https://discordapp.com/oauth2/authorize?client_id=660177114846199808&scope=bot&permissions=268435456) (or the image above) as the server owner. Invite the bot to the server of your choice and, if necessary, promote it to allow for administrative tasks.
 
 ## Usage
 
