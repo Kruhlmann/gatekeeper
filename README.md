@@ -48,7 +48,6 @@ git clone https://github.com/Kruhlmann/gatekeeper
 cd gatekeeper
 npm install
 npm run upgrade
-DATABASE_URL=postgres://<user>:<password>@localhost:5432/<name> npm run migrate up
 ```
 
 You must rename [config.json.example](config.json.example) to `config.json` and fill it in with the required details. 
