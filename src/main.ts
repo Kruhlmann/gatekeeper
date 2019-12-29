@@ -43,9 +43,7 @@ function send_captcha(user: discord.GuildMember) {
         user_id: user.id,
         answer: captcha.answer,
     }).then((c: psql.Captcha) => {
-        user.send(captcha_preface)
-        user.send(message);
-        user.send(`Your ID: \`${c.id}\``);
+        user.send(captcha_preface + `Your ID: \`${c.id}\``, message)
         psql.Captcha.findAll({
             where: {
                 id: {
@@ -134,6 +132,12 @@ function validate_environment(variable_keys: string[]): boolean {
     });
 
     discord_client.on("message", (message: discord.Message) => {
+        // Ignore our own messages
+        if (message.author.id === discord_client.user.id) {
+            return;
+        }
+
+
         const guild = discord_client.guilds.get(config.guild_id);
         const user = guild.members.get(message.author.id);
 
@@ -162,50 +166,45 @@ function validate_environment(variable_keys: string[]): boolean {
                     send_captcha(user);
                 }
             }
+            return;
         }
 
-        const channel = message.channel as discord.DMChannel;
-        const messages_promise = channel.fetchMessages({});
+
         const write_role = guild.roles.get(config.role_ids.write);
         const has_write_role = !!user.roles.find((role) => {
             return role.id === config.role_ids.write;
         });
 
-        // TODO: Re-add role restriction.
-        if (/*has_write_role || */message.author.id === discord_client.user.id) {
+        // Ignore messages from those already with the write role
+        if (config.deployment_mode === "production" && has_write_role) {
             return;
         }
 
-        messages_promise.then((messages: Map<any, discord.Message>) => {
-            for (const [m_id, m] of messages.entries()) {
-                if (m.author.id !== discord_client.user.id || !m.content.match(/Your ID: `[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}`/g)) {
-                    continue;
-                }
-                const id = m.content.split(" ")[2].replace(/`/g, "");
 
-                psql.Captcha.findOne({
-                    where: {
-                        [Op.and]: [{ id: id }, { active: true }]
-                    }
-                }).then((c: psql.Captcha) => {
-                    const f_answer = parseFloat(message.content);
-                    if (c.answer === f_answer.toFixed(1)) {
-                        user.addRole(write_role);
-                        const usr_str = `<${user.user.username}:${user.id}>`;
-                        const role_str = `<${write_role.name}:${write_role.id}>`;
-                        log(`Added read role ${role_str} to user ${usr_str}`);
-                        message.channel.send(`\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`);
-                        c.update({ active: false });
-                    } else {
-                        message.channel.send(`\`${message.content}\` is not correct.`);
-                    }
-                }).catch((error) => {
-                    log(error.stack, LoggingLevel.ERR);
-                    message.channel.send("I can't find an active captcha for you.");
-                });
-
-                break;
+        psql.Captcha.findOne({
+            where: {
+                [Op.and]: [{ user_id: message.author.id }, { active: true }]
             }
+        }).then((c: psql.Captcha) => {
+            if (!c) {
+                message.channel.send("I can't find an active captcha for you.");
+                return;
+            }
+
+            const f_answer = parseFloat(message.content);
+            if (c.answer === f_answer.toFixed(1)) {
+                user.addRole(write_role);
+                const usr_str = `<${user.user.username}:${user.id}>`;
+                const role_str = `<${write_role.name}:${write_role.id}>`;
+                log(`Added read role ${role_str} to user ${usr_str}`);
+                message.channel.send(`\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`);
+                c.update({ active: false });
+            } else {
+                message.channel.send(`\`${message.content}\` is not correct.`);
+            }
+        }).catch((error) => {
+            log(error.stack, LoggingLevel.ERR);
+            message.channel.send("An error occurred while looking for your captcha.");
         });
     });
 
