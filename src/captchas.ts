@@ -92,10 +92,10 @@ function make_combat_scenario(): CombatScenario {
  *
  * @returns - Message content object.
  */
-export function hit_cap_generator(_scenario: CombatScenario,
-                           _mitigation_type: string,
-                           _yellow_hits: boolean,
-                           _front: boolean,
+export function hit_cap_generator(_scenario?: CombatScenario,
+                           _mitigation_type?: string,
+                           _yellow_hits?: boolean,
+                           _front?: boolean,
 ): Captcha {
     const scenario = _scenario ? _scenario : make_combat_scenario();
     const mitigation_type = _mitigation_type ? _mitigation_type : arr_random(["none", "dodge", "block", "glancing"]);
@@ -163,9 +163,29 @@ export function hit_cap_generator(_scenario: CombatScenario,
     };
 }
 
+function wrapper_parry_generator(_scenario?: CombatScenario) {
+    return hit_cap_generator(_scenario, "parry");
+}
+function wrapper_block_generator(_scenario?: CombatScenario) {
+    return hit_cap_generator(_scenario, "block");
+}
+function wrapper_dodge_generator(_scenario?: CombatScenario) {
+    return hit_cap_generator(_scenario, "dodge");
+}
+function wrapper_glancing_generator(_scenario?: CombatScenario) {
+    return hit_cap_generator(_scenario, "glancing");
+}
+function wrapper_hit_cap_generator(_scenario?: CombatScenario) {
+    return hit_cap_generator(_scenario, "none");
+}
+
 // List of all generators.
 export const generators: Function[] = [
-    hit_cap_generator,
+    wrapper_parry_generator,
+    wrapper_block_generator,
+    wrapper_dodge_generator,
+    wrapper_glancing_generator,
+    wrapper_hit_cap_generator,
 ];
 
 /**
