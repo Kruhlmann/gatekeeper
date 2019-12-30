@@ -4,8 +4,18 @@ import { Scenario, CombatScenario, Captcha } from "./typings/types";
 
 const sexes = ["non-binary", "male", "female"];
 const races = ["orc", "human", "troll", "gnome"];
-const weapon_types = ["sword", "mace", "axe", "dagger"];
-const weapon_subtypes = ["dual wielded", "2 handed"];
+const weapons = [
+    ["sword", "dual wielded"],
+    ["sword", "2 handed"],
+    ["mace", "dual wielded"],
+    ["mace", "2 handed"],
+    ["axe", "dual wielded"],
+    ["axe", "2 handed"],
+    ["dagger", "dual wielded"],
+    ["fist", "dual wielded"],
+    ["staff", "2 handed"],
+    ["polearm", "2 handed"],
+];
 const targets = ["Firelord", "Lava Reaver", "Lava Surger", "Firewalker", "Core Hound", "Lava Annihilator"];
 const min_lvl = 57;
 const max_lvl = 63;
@@ -49,13 +59,7 @@ function make_scenario(): Scenario {
 
 function make_combat_scenario(): CombatScenario {
     const scenario = make_scenario();
-    const weapon_subtype = arr_random(weapon_subtypes) as string;
-    let weapon_type = arr_random(weapon_types) as string;
-    // There are no 2 handed daggers so fall back to staff if the sub type is
-    // 2 handed.
-    if (weapon_type === "dagger" && weapon_subtype =="2 handed") {
-        weapon_type = "staff";
-    }
+    const [weapon_type, weapon_subtype]: [string, string] = arr_random(weapons);
     const orc_factor = scenario.race === "orc" && weapon_type === "axe" ? 5 : 0;
     const human_factor = scenario.race === "human" && (weapon_type === "mace" || weapon_type === "sword") ? 5 : 0;
     const weapon_skill = 300 + orc_factor + human_factor;
