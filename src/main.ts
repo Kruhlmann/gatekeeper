@@ -12,6 +12,7 @@ import * as captcha_generator from "./captchas";
 import * as psql from "./db";
 import { Op } from "sequelize";
 import * as Sentry from "@sentry/node";
+import { Captcha } from "./typings/types";
 
 const req_env_vars = [
     "GATEKEEPER_DB_USR",
@@ -29,11 +30,31 @@ const captcha_preface = "__**Fight Club Gatekeeping**__\n\nWelcome to the Fight 
 let db: psql.DB;
 
 /**
+ * Returns 3 unique hit cap captchas.
+ *
+ * @return - Array length 3 with distinct git cap captchas,
+ */
+function get_unique_captchas(): Captcha[] {
+    const captchas = [];
+    const mitigation_types = ["none", "dodge", "block", "glancing"];
+    for (let i = 0; i < 3; i++) {
+        const mit_type_index = Math.floor(Math.random() * mitigation_types.length);
+        const mit_type = mitigation_types[mit_type_index];
+        mitigation_types.splice(mit_type_index, 1);
+        const captcha = captcha_generator.hit_cap_generator(undefined, mit_type, undefined, undefined);
+        console.log(mit_type);
+        captchas.push(captcha);
+    }
+    return captchas;
+}
+
+/**
  * Sends a captcha to a user to allow them to optain write permissions.
  *
  * @param user - User to send captcha to.
  */
 function send_captcha(user: discord.GuildMember) {
+    get_unique_captchas();
     const captcha = captcha_generator.generate();
     const message = new discord.RichEmbed()
         .setTitle("Fight Club Captcha")
