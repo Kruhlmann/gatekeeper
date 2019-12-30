@@ -186,8 +186,10 @@ function validate_environment(variable_keys: string[]): boolean {
                 [Op.and]: [{ user_id: message.author.id }, { active: true }]
             }
         }).then((c: psql.Captcha) => {
-            if (!c)
-                return message.channel.send("I can't find an active captcha for you.");
+            if (!c) {
+                message.channel.send("I can't find an active captcha for you.");
+                return;
+            }
 
             const f_answer = parseFloat(message.content);
             if (c.answer === f_answer.toFixed(1)) {
@@ -202,7 +204,7 @@ function validate_environment(variable_keys: string[]): boolean {
             }
         }).catch((error) => {
             log(error.stack, LoggingLevel.ERR);
-            message.channel.send("I can't find an active captcha for you.");
+            message.channel.send("An error occurred while looking for your captcha.");
         });
     });
 
