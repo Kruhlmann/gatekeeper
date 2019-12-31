@@ -40,7 +40,7 @@ function get_unique_captchas(): Captcha[] {
     for (let i = 0; i < 3; i++) {
         const generator_index = Math.floor(Math.random() * generators.length);
         const generator = generators[generator_index];
-        generators.splice(generator_index), 1);
+        generators.splice(generator_index, 1);
         const captcha = generator();
         console.log(mit_type);
         captchas.push(captcha);
