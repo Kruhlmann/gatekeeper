@@ -42,7 +42,6 @@ function get_unique_captchas(): Captcha[] {
         const generator = generators[generator_index];
         generators.splice(generator_index, 1);
         const captcha = generator();
-        console.log(mit_type);
         captchas.push(captcha);
     }
     return captchas;
@@ -223,14 +222,14 @@ function validate_environment(variable_keys: string[]): boolean {
                 psql.Captcha.findAll({
                     where: { completed: true }
                 }).then((completed: psql.Captcha[]) => {
-                    if (completed.length >= 3) {
+                    if (completed.length > 2) {
                         user.addRole(write_role);
                         const usr_str = `<${user.user.username}:${user.id}>`;
                         const role_str = `<${write_role.name}:${write_role.id}>`;
                         log(`Added write role ${role_str} to user ${usr_str}`);
                         message.channel.send(`\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`);
                     } else {
-                        message.channel.send(`\`${message.content}\` is correct. You've completed ${completed.length}/3 captchas.`);
+                        message.channel.send(`\`${message.content}\` is correct. You've completed ${completed.length + 1}/3 captchas.`);
                     }
                 });
             } else {
