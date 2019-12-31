@@ -44,6 +44,7 @@ function send_captcha(user: discord.GuildMember) {
         answer: captcha.answer,
     }).then((c: psql.Captcha) => {
         user.send(captcha_preface + `Your ID: \`${c.id}\``, message)
+        log(`Sent captcha to user ${user.id} with answer ${captcha.answer}`);
         psql.Captcha.findAll({
             where: {
                 id: {

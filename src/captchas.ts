@@ -185,7 +185,8 @@ function wrapper_hit_cap_generator(_scenario?: CombatScenario) {
 
 // List of all generators.
 export const generators: Function[] = [
-    wrapper_parry_generator,
+    // TODO: Re-add this when we actually have a formula.
+    // wrapper_parry_generator,
     wrapper_block_generator,
     wrapper_dodge_generator,
     wrapper_glancing_generator,
