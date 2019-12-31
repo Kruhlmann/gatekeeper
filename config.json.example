@@ -3,9 +3,9 @@
     "locale": "en-GB",
     "time_zone": "UTC",
     "tickrate": 0.3,
-    "guild_id": "637063955336134666",
+    "guild_id": "",
     "role_ids": {
-        "read": "637069323537743883",
-        "write":"637069339345813515"
+        "read": "",
+        "write":""
     }
 }
