@@ -36,12 +36,12 @@ let db: psql.DB;
  */
 function get_unique_captchas(): Captcha[] {
     const captchas = [];
-    const mitigation_types = ["none", "dodge", "block", "glancing"];
+    const generators = captcha_generator.generators;
     for (let i = 0; i < 3; i++) {
-        const mit_type_index = Math.floor(Math.random() * mitigation_types.length);
-        const mit_type = mitigation_types[mit_type_index];
-        mitigation_types.splice(mit_type_index, 1);
-        const captcha = captcha_generator.hit_cap_generator(undefined, mit_type, undefined, undefined);
+        const generator_index = Math.floor(Math.random() * generators.length);
+        const generator = generators[generator_index];
+        generators.splice(generator_index), 1);
+        const captcha = generator();
         console.log(mit_type);
         captchas.push(captcha);
     }
