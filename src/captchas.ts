@@ -4,8 +4,18 @@ import { Scenario, CombatScenario, Captcha } from "./typings/types";
 
 const sexes = ["non-binary", "male", "female"];
 const races = ["orc", "human", "troll", "gnome"];
-const weapon_types = ["sword", "mace", "axe", "dagger"];
-const weapon_subtypes = ["dual wielded", "2 handed"];
+const weapons = [
+    ["sword", "dual wielded"],
+    ["sword", "2 handed"],
+    ["mace", "dual wielded"],
+    ["mace", "2 handed"],
+    ["axe", "dual wielded"],
+    ["axe", "2 handed"],
+    ["dagger", "dual wielded"],
+    ["fist", "dual wielded"],
+    ["staff", "2 handed"],
+    ["polearm", "2 handed"],
+];
 const targets = ["Firelord", "Lava Reaver", "Lava Surger", "Firewalker", "Core Hound", "Lava Annihilator"];
 const min_lvl = 57;
 const max_lvl = 63;
@@ -49,13 +59,7 @@ function make_scenario(): Scenario {
 
 function make_combat_scenario(): CombatScenario {
     const scenario = make_scenario();
-    const weapon_subtype = arr_random(weapon_subtypes) as string;
-    let weapon_type = arr_random(weapon_types) as string;
-    // There are no 2 handed daggers so fall back to staff if the sub type is
-    // 2 handed.
-    if (weapon_type === "dagger" && weapon_subtype =="2 handed") {
-        weapon_type = "staff";
-    }
+    const [weapon_type, weapon_subtype]: [string, string] = arr_random(weapons);
     const orc_factor = scenario.race === "orc" && weapon_type === "axe" ? 5 : 0;
     const human_factor = scenario.race === "human" && (weapon_type === "mace" || weapon_type === "sword") ? 5 : 0;
     const weapon_skill = 300 + orc_factor + human_factor;
@@ -92,17 +96,17 @@ function make_combat_scenario(): CombatScenario {
  *
  * @returns - Message content object.
  */
-export function hit_cap_generator(_scenario: CombatScenario,
-                           _mitigation_type: string,
-                           _yellow_hits: boolean,
-                           _front: boolean,
+export function hit_cap_generator(_scenario?: CombatScenario,
+                           _mitigation_type?: string,
+                           _yellow_hits?: boolean,
+                           _front?: boolean,
 ): Captcha {
     const scenario = _scenario ? _scenario : make_combat_scenario();
     const mitigation_type = _mitigation_type ? _mitigation_type : arr_random(["none", "dodge", "block", "glancing"]);
     const yellow_hits = _yellow_hits !== undefined ? _yellow_hits : Math.random() < 0.5;
     const front = _front !== undefined ? _front || mitigation_type === "block" : Math.random() < 0.5 || mitigation_type === "block";
     const miss_modifier = scenario.skill_delta > 10 ? 0.2 : 0.1;
-    const miss_pentalty = scenario.skill_delta > 10 ? 1 : 0;
+    const miss_penalty = scenario.skill_delta > 10 ? 1 : 0;
 
     let answer: number;
     let answer_example: string;
@@ -115,25 +119,25 @@ export function hit_cap_generator(_scenario: CombatScenario,
                 // TODO: This has no formula yet.
                 const parry_chance = 10;
                 answer = Math.ceil(parry_chance / 10) * 10;
-                attack_query = "the chance that your attacks are parried (rounded up to nearest 1/10th)?";
+                attack_query = "the chance that your attacks are parried (**rounded up to nearest 1/10th**)?";
                 answer_example = "19.4";
                 break;
             case "block":
                 const block_chance = front ? Math.min(5, 5 + scenario.skill_delta * 0.1) : 0;
                 answer = block_chance;
-                attack_query = "the chance that your attacks are blocked (rounded up to nearest 1/10th)?";
+                attack_query = "the chance that your attacks are blocked (**rounded up to nearest 1/10th**)?";
                 answer_example = "14.2";
                 break;
             case "dodge":
                 const dodge_chance = 5 + scenario.skill_delta * 0.1;
                 answer = dodge_chance;
-                attack_query = "the chance that your attacks are dodged (rounded up to nearest 1/10th)?";
+                attack_query = "the chance that your attacks are dodged (**rounded up to nearest 1/10th**)?";
                 answer_example = "7.2";
                 break;
             case "glancing":
                 const glancing_chance = 10 + ((scenario.target.defense - Math.min(300, scenario.weapon.skill)) * 2);
                 answer = Math.ceil(glancing_chance / 10) * 10;
-                attack_query = "the chance that you land a glancing blow (rounded up to nearest 1/10th)?";
+                attack_query = "the chance that you land a glancing blow (**rounded up to nearest 1/10th**)?";
                 answer_example = "5.2";
                 break;
             default:
@@ -147,7 +151,7 @@ export function hit_cap_generator(_scenario: CombatScenario,
         if (scenario.weapon.subtype === "dual wielded" && !yellow_hits) {
             miss_chance = miss_chance * 0.8 + 20;
         }
-        answer = miss_chance + miss_pentalty;
+        answer = miss_chance + miss_penalty;
         attack_query = "your hit cap (rounded up to nearest 1/10th)?"
         answer_example = "13.1";
     }
@@ -155,17 +159,37 @@ export function hit_cap_generator(_scenario: CombatScenario,
     // Message text.
     const scenario_txt = `You (a **${scenario.sex_prefix !== "" ? `${scenario.sex_prefix} ` : ""}${scenario.sex} ${scenario.race}** DPS fury warrior in **<${scenario.guild_name}>**) is attacking a level **${scenario.target.level}** **${scenario.target.name}** from **${front ? "the front" : "behind"}** using your **${scenario.weapon.subtype} ${scenario.weapon.type}${scenario.weapon.subtype == "dual wielded" ? "s" : ""}**`;
     const question = `Given these parameters what is ${attack_query}\n\nAnswer example: \`${answer_example}\``;
-    //  **${yellow_hits ? "yellow" : "white"}**
+
     return {
         answer: Math.max(0, answer).toFixed(1),
         seed: (Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 32) + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 32)).toUpperCase(),
-        text: `${scenario_txt}\n\n${question}`,
+        text: `${scenario_txt}\n\n${question}\n\n*Experiencing problems with my programming? [Open an issue](https://github.com/Kruhlmann/gatekeeper/issues/new?assignees=Kruhlmann&labels=bug&template=captcha-issue.md&title=%5BCAPTCHA%5D)*`
     };
+}
+
+function wrapper_parry_generator(_scenario?: CombatScenario) {
+    return hit_cap_generator(_scenario, "parry");
+}
+function wrapper_block_generator(_scenario?: CombatScenario) {
+    return hit_cap_generator(_scenario, "block");
+}
+function wrapper_dodge_generator(_scenario?: CombatScenario) {
+    return hit_cap_generator(_scenario, "dodge");
+}
+function wrapper_glancing_generator(_scenario?: CombatScenario) {
+    return hit_cap_generator(_scenario, "glancing");
+}
+function wrapper_hit_cap_generator(_scenario?: CombatScenario) {
+    return hit_cap_generator(_scenario, "none");
 }
 
 // List of all generators.
 export const generators: Function[] = [
-    hit_cap_generator,
+    wrapper_parry_generator,
+    wrapper_block_generator,
+    wrapper_dodge_generator,
+    wrapper_glancing_generator,
+    wrapper_hit_cap_generator,
 ];
 
 /**
