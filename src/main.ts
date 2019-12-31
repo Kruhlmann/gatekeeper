@@ -174,7 +174,8 @@ function validate_environment(variable_keys: string[]): boolean {
         const user = guild.members.get(message.author.id);
 
         if (message.channel.type !== "dm") {
-            if (message.channel.id === config.trigger_channel_id && message.content === "!captcha") {
+            if (message.content === "!captcha") {
+                // TODO: Don't send message to people who already have write roles.
                 if (config.deployment_mode === "production") {
                     psql.Captcha.findOne({
                         order: ["createdAt"],

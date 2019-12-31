@@ -1,11 +1,11 @@
 {
-    "guild_id": "",
-    "role_ids": {
-        "read": "",
-        "write" : ""
-    },
-    "trigger_channel_id": "",
     "deployment_mode": "development",
     "locale": "en-GB",
     "time_zone": "UTC",
+    "tickrate": 0.3,
+    "guild_id": "",
+    "role_ids": {
+        "read": "",
+        "write":""
+    }
 }
