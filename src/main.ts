@@ -12,6 +12,7 @@ import * as captcha_generator from "./captchas";
 import * as psql from "./db";
 import { Op } from "sequelize";
 import * as Sentry from "@sentry/node";
+import { Captcha } from "./typings/types";
 
 const req_env_vars = [
     "GATEKEEPER_DB_USR",
@@ -24,9 +25,41 @@ const req_env_vars = [
 process.on("uncaughtException", handle_exception);
 process.on("unhandledRejection", handle_exception);
 
-const captcha_preface = "__**Fight Club Gatekeeping**__\n\nWelcome to the Fight Club Classic Warrior discord.\n\nMost channels in this discord are for **serious** theorycrafting and as such we ask you to please answer the question below, if you want write priviledges, to verify that you have at least some basic knowledge about the warrior class.\n\nYou can find the answer to your question if you throroughly read through the frequently asked questions channels.\n\n"
+const captcha_preface = "__**Fight Club Gatekeeping**__\n\nWelcome to the Fight Club Classic Warrior discord.\n\nMost channels in this discord are for **serious** theorycrafting and as such we ask you to please answer the questions below, if you want write priviledges, to verify that you have at least some basic knowledge about the warrior class.\n\nYou can find the answer to your question if you throroughly read through the frequently asked questions channels."
 
 let db: psql.DB;
+
+/**
+ * Returns 3 unique hit cap captchas.
+ *
+ * @return - Array length 3 with distinct git cap captchas,
+ */
+function get_unique_captchas(): Captcha[] {
+    const captchas = [];
+    const generators = captcha_generator.generators;
+    for (let i = 0; i < 3; i++) {
+        const generator_index = Math.floor(Math.random() * generators.length);
+        const generator = generators[generator_index];
+        generators.splice(generator_index), 1);
+        const captcha = generator();
+        console.log(mit_type);
+        captchas.push(captcha);
+    }
+    return captchas;
+}
+
+/**
+ * Contructs a rich embed discord message from a captcha.
+ *
+ * @param captcha - Captcha to generate message from.
+ * @returns - Discord rich embed message.
+ */
+function make_captcha_message(captcha: Captcha): discord.RichEmbed {
+    return new discord.RichEmbed()
+        .setTitle("Fight Club Captcha")
+        .setDescription(captcha.text)
+        .setThumbnail("https://img.rankedboost.com/wp-content/uploads/2019/05/WoW-Classic-Warrior-Guide-150x150.png");
+}
 
 /**
  * Sends a captcha to a user to allow them to optain write permissions.
@@ -34,11 +67,9 @@ let db: psql.DB;
  * @param user - User to send captcha to.
  */
 function send_captcha(user: discord.GuildMember) {
+    get_unique_captchas();
     const captcha = captcha_generator.generate();
-    const message = new discord.RichEmbed()
-        .setTitle("Fight Club Captcha")
-        .setDescription(captcha.text)
-        .setThumbnail("https://img.rankedboost.com/wp-content/uploads/2019/05/WoW-Classic-Warrior-Guide-150x150.png")
+    const message = make_captcha_message(captcha);
     psql.Captcha.create({
         user_id: user.id,
         answer: captcha.answer,
@@ -144,7 +175,6 @@ function validate_environment(variable_keys: string[]): boolean {
 
         if (message.channel.type !== "dm") {
             if (message.channel.id === config.trigger_channel_id && message.content === "!captcha") {
-                // TODO: Don't send message to people who already have write roles.
                 if (config.deployment_mode === "production") {
                     psql.Captcha.findOne({
                         order: ["createdAt"],
@@ -181,27 +211,29 @@ function validate_environment(variable_keys: string[]): boolean {
             return;
         }
 
-
         psql.Captcha.findOne({
             where: {
                 [Op.and]: [{ user_id: message.author.id }, { active: true }]
             }
         }).then((c: psql.Captcha) => {
-            if (!c) {
-                message.channel.send("I can't find an active captcha for you.");
-                return;
-            }
+            if (c.answer === message.content) {
+                c.update({ completed: true, active: false });
 
-            const f_answer = parseFloat(message.content);
-            if (c.answer === f_answer.toFixed(1)) {
-                user.addRole(write_role);
-                const usr_str = `<${user.user.username}:${user.id}>`;
-                const role_str = `<${write_role.name}:${write_role.id}>`;
-                log(`Added read role ${role_str} to user ${usr_str}`);
-                message.channel.send(`\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`);
-                c.update({ active: false });
+                psql.Captcha.findAll({
+                    where: { completed: true }
+                }).then((completed: psql.Captcha[]) => {
+                    if (completed.length >= 3) {
+                        user.addRole(write_role);
+                        const usr_str = `<${user.user.username}:${user.id}>`;
+                        const role_str = `<${write_role.name}:${write_role.id}>`;
+                        log(`Added write role ${role_str} to user ${usr_str}`);
+                        message.channel.send(`\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`);
+                    } else {
+                        message.channel.send(`\`${message.content}\` is correct. You've completed ${completed.length}/3 captchas.`);
+                    }
+                });
             } else {
-                message.channel.send(`\`${message.content}\` is not correct.`);
+                message.channel.send(`\`${message.content}\` is not correct.`)
             }
         }).catch((error) => {
             log(error.stack, LoggingLevel.ERR);

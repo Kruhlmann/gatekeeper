@@ -20,6 +20,7 @@ export class Captcha extends Model {
     public user_id!: string;
     public answer!: string;
     public active!: boolean;
+    public completed!: boolean;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 };
@@ -61,6 +62,11 @@ export class DB {
             active: {
                 type: DataTypes.BOOLEAN,
                 defaultValue: true,
+                allowNull: false,
+            },
+            completed: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false,
                 allowNull: false,
             }
         }, {
