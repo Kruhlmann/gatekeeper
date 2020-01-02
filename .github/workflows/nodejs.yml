@@ -23,9 +23,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: database setup
       run: |
-        export GATEKEEPER_TMP_DB="gatekeeper-test-$GITHUB_SHA"
-        echo $GATEKEEPER_TMP_DB
-        sudo su -m postgres -c 'createdb "$GATEKEEPER_TMP_DB"'
+        sudo su -m postgres -c 'createdb gatekeeper-test-${{ matrix.node-version }}'
     - name: npm install
       run: |
         npm install
@@ -42,5 +40,4 @@ jobs:
         npm run test
     - name: destroy db
       run: |
-        echo $GATEKEEPER_TMP_DB
-        sudo su -m postgres -c 'dropdb "$GATEKEEPER_TMP_DB"'
+        sudo su -m postgres -c 'dropdb gatekeeper-test-${{ matrix.node-version }}''
