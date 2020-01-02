@@ -40,4 +40,4 @@ jobs:
         npm run test
     - name: destroy db
       run: |
-        sudo su -m postgres -c 'dropdb gatekeeper-test-${{ matrix.node-version }}''
+        sudo su -m postgres -c 'dropdb gatekeeper-test-${{ matrix.node-version }}'
