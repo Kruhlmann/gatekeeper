@@ -21,10 +21,13 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+    - name: database setup
+      run: |
+        createdb "gatekeeper-test-$GITHUB-SHA"
     - name: npm install
       run: |
         npm install
-    - name: copy-config
+    - name: copy config
       run: |
         cp /var/services/gatekeeper/config.json .
         cp /var/services/gatekeeper/res/adjectives.json ./res
@@ -35,3 +38,6 @@ jobs:
     - name: test
       run: |
         npm run test
+    - name: destroy db
+      run: |
+        dropdb "gatekeeper-test-$GITHUB-SHA"
