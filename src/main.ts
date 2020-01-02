@@ -36,7 +36,7 @@ let db: psql.DB;
  */
 function get_unique_captchas(): Captcha[] {
     const captchas = [];
-    const generators = captcha_generator.generators;
+    const generators = [...captcha_generator.generators];
     for (let i = 0; i < 3; i++) {
         const generator_index = Math.floor(Math.random() * generators.length);
         const generator = generators[generator_index];
@@ -66,26 +66,52 @@ function make_captcha_message(captcha: Captcha): discord.RichEmbed {
  * @param user - User to send captcha to.
  */
 function send_captcha(user: discord.GuildMember) {
-    get_unique_captchas();
-    const captcha = captcha_generator.generate();
-    const message = make_captcha_message(captcha);
-    psql.Captcha.create({
-        user_id: user.id,
-        answer: captcha.answer,
-    }).then((c: psql.Captcha) => {
-        user.send(captcha_preface + `Your ID: \`${c.id}\``, message)
-        log(`Sent captcha to user ${user.id} with answer ${captcha.answer}`);
-        psql.Captcha.findAll({
-            where: {
-                id: {
-                    [Op.ne]: c.id
-                }
-            }
-        }).then((captchas) => {
-            for (const c of captchas) {
-                c.update({ active: false })
-            }
+    psql.Quiz.update({
+        active: false 
+    },{
+        where: { user_id: user.id }
+    }).then(() => {
+
+        psql.Captcha.update({
+            active: false 
+        },{
+            where: { user_id: user.id }
+        }).then(() => {
+
+            psql.Quiz.create({
+                user_id: user.id,
+                active: true,
+            }).then((q: psql.Quiz) => {
+
+                let first = true;
+                for (let captcha of get_unique_captchas()) {
+                    if (first) {
+                        psql.Captcha.create({
+                            quiz_id: q.id,
+                            user_id: user.id,
+                            text: captcha.text,
+                            answer: captcha.answer,
+                            active: true,
+                        }).then((c: psql.Captcha) => {
+                            user.send(captcha_preface + `Your ID: \`${q.id}\``, make_captcha_message(c))
+                            log(`Sent captcha to user ${user.id} with answer ${captcha.answer}`);
+                        });
+                    } else {
+                        psql.Captcha.create({
+                            quiz_id: q.id,
+                            user_id: user.id,
+                            text: captcha.text,
+                            answer: captcha.answer,
+                            active: false,
+                        });
+                    }
+                    first = false;
+                };
+
+            });
+
         });
+
     });
 }
 
@@ -171,36 +197,6 @@ function validate_environment(variable_keys: string[]): boolean {
 
         const guild = discord_client.guilds.get(config.guild_id);
         const user = guild.members.get(message.author.id);
-
-        if (message.channel.type !== "dm") {
-            if (message.content === "!captcha") {
-                // TODO: Don't send message to people who already have write roles.
-                if (config.deployment_mode === "production") {
-                    psql.Captcha.findOne({
-                        order: ["createdAt"],
-                        where: {
-                            [Op.and]: [{ user_id: user.id }, { active: true }],
-                        },
-                    }).then((captcha) => {
-                        if (captcha) {
-                            const created = new Date(captcha.createdAt);
-                            const expires = new Date(created.getTime() + 24 * 60 * 60 * 1000)
-                            if (expires >= new Date()) {
-                                message.reply("You already have a pending captcha. You can request a new one 24 hours after the active CAPTCHA was requested.");
-                                return;
-                            }
-                        }
-                        send_captcha(user)
-                    });
-                } else {
-                    // In non-production mode ignore the cooldown of captchas.
-                    send_captcha(user);
-                }
-            }
-            return;
-        }
-
-
         const write_role = guild.roles.get(config.role_ids.write);
         const has_write_role = !!user.roles.find((role) => {
             return role.id === config.role_ids.write;
@@ -211,29 +207,102 @@ function validate_environment(variable_keys: string[]): boolean {
             return;
         }
 
+        if (message.channel.type !== "dm") {
+            if (message.content === "!captcha") {
+                if (config.deployment_mode === "production") {
+                    psql.Quiz.findOne({
+                        order: ["createdAt"],
+                        where: {
+                            [Op.and]: [{ user_id: user.id }, { active: true }],
+                        },
+                    }).then((quiz) => {
+                        if (quiz) {
+                            const created = new Date(quiz.createdAt);
+                            const expires = new Date(created.getTime() + 24 * 60 * 60 * 1000)
+                            if (expires >= new Date()) {
+                                message.reply("You already have a pending captcha. You can request a new one 24 hours after the active CAPTCHA was requested.");
+                                return;
+                            }
+                        }
+                    });
+                }
+                send_captcha(user);
+            }
+            return;
+        }
+
         psql.Captcha.findOne({
             where: {
                 [Op.and]: [{ user_id: message.author.id }, { active: true }]
             }
         }).then((c: psql.Captcha) => {
+            if (!c) {
+                message.channel.send("An active captcha was not found for you.");
+                return;
+            }
+
+            const created = new Date(c.createdAt);
+            const expires = new Date(created.getTime() + 24 * 60 * 60 * 1000);
+            if (expires < new Date()) {
+                message.channel.send("An active captcha was not found for you.");
+                return;
+            }
+
+
             if (c.answer === message.content) {
                 c.update({ completed: true, active: false });
 
-                psql.Captcha.findAll({
-                    where: { completed: true }
-                }).then((completed: psql.Captcha[]) => {
-                    if (completed.length > 2) {
+                psql.Quiz.findOne({
+                    where: {
+                        [Op.and]: [{ user_id: message.author.id }, { active: true }]
+                    }
+                }).then((q: psql.Quiz) => {
+                    const completed = q.completed+1;
+                    q.update({completed: completed});
+
+                    if (completed == 3) {
                         user.addRole(write_role);
                         const usr_str = `<${user.user.username}:${user.id}>`;
                         const role_str = `<${write_role.name}:${write_role.id}>`;
                         log(`Added write role ${role_str} to user ${usr_str}`);
                         message.channel.send(`\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`);
+                        return;
                     } else {
-                        message.channel.send(`\`${message.content}\` is correct. You've completed ${completed.length + 1}/3 captchas.`);
+                        message.channel.send(`\`${message.content}\` is correct. You've completed ${completed}/3 captchas.`);
                     }
+
+                    psql.Captcha.findOne({
+                        where: {
+                            [Op.and]: [{ quiz_id: q.id }, { completed: false }]
+                        }
+                    }).then((c: psql.Captcha) => {
+                        c.update({active: true}).then((c: psql.Captcha) => {
+                            user.send('', make_captcha_message(c))
+                            log(`Sent captcha to user ${user.id} with answer ${c.answer}`);
+                        });
+                    });
                 });
             } else {
-                message.channel.send(`\`${message.content}\` is not correct.`)
+                psql.Quiz.findOne({
+                    where: {
+                        [Op.and]: [{ user_id: message.author.id }, { active: true }]
+                    }
+                }).then((q: psql.Quiz) => {
+                    const wrong = q.wrong+1;
+                    q.update({wrong: wrong});
+
+                    if (wrong == 5) {
+                        psql.Captcha.update({
+                            active: false 
+                        },{
+                            where: { user_id: user.id }
+                        }).then(() => {
+                            message.channel.send(`\`${message.content}\` is not correct. You've failed and may try again in 24 hours.`);
+                        });
+                    } else {
+                        message.channel.send(`\`${message.content}\` is not correct. You've used ${wrong}/5 incorrect answers.`);
+                    }
+                });
             }
         }).catch((error) => {
             log(error.stack, LoggingLevel.ERR);

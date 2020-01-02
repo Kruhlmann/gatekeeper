@@ -162,7 +162,6 @@ export function hit_cap_generator(_scenario?: CombatScenario,
 
     return {
         answer: Math.max(0, answer).toFixed(1),
-        seed: (Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 32) + Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 32)).toUpperCase(),
         text: `${scenario_txt}\n\n${question}\n\n*Experiencing problems with my programming? [Open an issue](https://github.com/Kruhlmann/gatekeeper/issues/new?assignees=Kruhlmann&labels=bug&template=captcha-issue.md&title=%5BCAPTCHA%5D)*`
     };
 }
