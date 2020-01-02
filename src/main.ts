@@ -109,7 +109,6 @@ function send_captcha(user: discord.GuildMember) {
                 };
 
             });
-
         });
 
     });
