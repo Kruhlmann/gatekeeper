@@ -20,6 +20,8 @@ jobs:
     - name: npm install, build, and test
       run: |
         cp /var/services/gatekeeper/config.json .
+        cp /var/services/gatekeeper/res/adjectives.json ./res
+        cp /var/services/gatekeeper/res/nouns.json ./res
         npm install
         npm run build
         npm run test
