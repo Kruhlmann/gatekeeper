@@ -34,7 +34,7 @@ jobs:
         source .test-environment
         createdb gatekeeper-test-$GITHUB_SHA-${{ matrix.node-version }}
         export GATEKEEPER_DB_NAM=gatekeeper-test-$GITHUB_SHA-${{ matrix.node-version }}
-        echo postgres://$GATEKEEPER_DB_USR:$GATEKEEPER_DB_PWD@localhost:5432/$GATEKEEPER_DB_NAM
+        whoami
         npm run upgrade
     - name: Build
       run: |
