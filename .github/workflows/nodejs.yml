@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: self-hosted
 
     strategy:
@@ -21,13 +20,28 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: npm install, build, and test
+    - name: Copy configuration files
       run: |
+        cp /var/services/gatekeeper/.test-environment .
         cp /var/services/gatekeeper/config.json .
         cp /var/services/gatekeeper/res/adjectives.json ./res
         cp /var/services/gatekeeper/res/nouns.json ./res
+    - name: Install dependencies
+      run: |
         npm install
+    - name: Setup database
+      run: |
+        source .test-environment
+        createdb gatekeeper-test-$GITHUB_SHA-${{ matrix.node-version }}
+        export GATEKEEPER_DB_NAM=gatekeeper-test-$GITHUB_SHA-${{ matrix.node-version }}
+        whoami
+        npm run upgrade
+    - name: Build
+      run: |
         npm run build
+    - name: Test
+      run: |
         npm run test
-      env:
-        CI: true
+    - name: Destroy database
+      run: |
+        dropdb gatekeeper-test-$GITHUB_SHA-${{ matrix.node-version }}
