@@ -22,7 +22,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: copy config
       run: |
-        cp /var/services/gatekeeper/.test-envrionment .
+        cp /var/services/gatekeeper/.test-environment .
         cp /var/services/gatekeeper/config.json .
         cp /var/services/gatekeeper/res/adjectives.json ./res
         cp /var/services/gatekeeper/res/nouns.json ./res
