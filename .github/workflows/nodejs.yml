@@ -26,12 +26,12 @@ jobs:
         cp /var/services/gatekeeper/config.json .
         cp /var/services/gatekeeper/res/adjectives.json ./res
         cp /var/services/gatekeeper/res/nouns.json ./res
-        source .test-environment
     - name: Install dependencies
       run: |
         npm install
     - name: Setup database
       run: |
+        source .test-environment
         createdb gatekeeper-test-$GITHUB_SHA-${{ matrix.node-version }}
         export GATEKEEPER_DB_NAM=gatekeeper-test-$GITHUB_SHA-${{ matrix.node-version }}
         npm run upgrade
