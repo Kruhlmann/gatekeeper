@@ -20,17 +20,21 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: database setup
-      run: |
-        createdb gatekeeper-test-$GITHUB_SHA-${{ matrix.node-version }}
-    - name: npm install
-      run: |
-        npm install
     - name: copy config
       run: |
+        cp /var/services/gatekeeper/.test-envrionment .
         cp /var/services/gatekeeper/config.json .
         cp /var/services/gatekeeper/res/adjectives.json ./res
         cp /var/services/gatekeeper/res/nouns.json ./res
+        source .test-environment
+    - name: npm install
+      run: |
+        npm install
+    - name: database setup
+      run: |
+        createdb gatekeeper-test-$GITHUB_SHA-${{ matrix.node-version }}
+        export GATEKEEPER_DB_NAM=gatekeeper-test-$GITHUB_SHA-${{ matrix.node-version }}
+        npm run upgrade
     - name: build
       run: |
         npm run build
