@@ -21,7 +21,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Copy configuration files
       run: |
-        cp /var/services/gatekeeper/.test-environment .
         cp /var/services/gatekeeper/config.json .
         cp /var/services/gatekeeper/res/adjectives.json ./res
         cp /var/services/gatekeeper/res/nouns.json ./res
@@ -30,17 +29,23 @@ jobs:
         npm install
     - name: Setup database
       run: |
-        source .test-environment
         createdb gatekeeper-test-$GITHUB_SHA-${{ matrix.node-version }}
         export GATEKEEPER_DB_NAM=gatekeeper-test-$GITHUB_SHA-${{ matrix.node-version }}
-        whoami
         npm run upgrade
+      env:
+        GATEKEEPER_DB_USR: ${{ secrets.GATEKEEPER_DB_USR }}
+        GATEKEEPER_DB_PWD: ${{ secrets.GATEKEEPER_DB_PWD }}
     - name: Build
       run: |
         npm run build
+      env:
+        GATEKEEPER_DISCORD_TOKEN: ${{ secrets.GATEKEEPER_DB_USR }}
     - name: Test
       run: |
         npm run test
     - name: Destroy database
       run: |
         dropdb gatekeeper-test-$GITHUB_SHA-${{ matrix.node-version }}
+      env:
+        GATEKEEPER_DB_USR: ${{ secrets.GATEKEEPER_DB_USR }}
+        GATEKEEPER_DB_PWD: ${{ secrets.GATEKEEPER_DB_PWD }}
