@@ -53,11 +53,16 @@ function get_unique_captchas(): Captcha[] {
  * @param captcha - Captcha to generate message from.
  * @returns - Discord rich embed message.
  */
-function make_captcha_message(captcha: Captcha): discord.RichEmbed {
+function make_captcha_message(captcha: Captcha, suffix: string): discord.RichEmbed {
     return new discord.RichEmbed()
         .setTitle("Fight Club Captcha")
-        .setDescription(captcha.text)
+        .setDescription(captcha.text + suffix)
         .setThumbnail("https://img.rankedboost.com/wp-content/uploads/2019/05/WoW-Classic-Warrior-Guide-150x150.png");
+}
+
+function make_github_issue_suffix(captcha: psql.Captcha): string {
+    return `\n\n*Experiencing problems with my programming? [Open an issue](https://github.com/Kruhlmann/gatekeeper/issues/new?assignees=Kruhlmann&labels=bug&template=captcha-issue.md&title=%5BCAPTCHA%5D)*` +
+    `\nYour ID: \`${captcha.quiz_id}\\${captcha.id}\``;
 }
 
 /**
@@ -93,7 +98,7 @@ function send_captcha(user: discord.GuildMember) {
                             answer: captcha.answer,
                             active: true,
                         }).then((c: psql.Captcha) => {
-                            user.send(captcha_preface + `Your ID: \`${q.id}\``, make_captcha_message(c))
+                            user.send(captcha_preface, make_captcha_message(c, make_github_issue_suffix(c)));
                             log(`Sent captcha to user ${user.id} with answer ${captcha.answer}`);
                         });
                     } else {
@@ -206,30 +211,36 @@ function validate_environment(variable_keys: string[]): boolean {
             return;
         }
 
+        // Handle '!captcha' messages in public text channels
         if (message.channel.type !== "dm") {
-            if (message.content === "!captcha") {
-                if (config.deployment_mode === "production") {
-                    psql.Quiz.findOne({
-                        order: ["createdAt"],
-                        where: {
-                            [Op.and]: [{ user_id: user.id }, { active: true }],
-                        },
-                    }).then((quiz) => {
-                        if (quiz) {
-                            const created = new Date(quiz.createdAt);
-                            const expires = new Date(created.getTime() + 24 * 60 * 60 * 1000)
-                            if (expires >= new Date()) {
-                                message.reply("You already have a pending captcha. You can request a new one 24 hours after the active CAPTCHA was requested.");
-                                return;
-                            }
+            if (message.content !== "!captcha") {
+                return;
+            }
+
+            if (config.deployment_mode === "production") {
+                psql.Quiz.findOne({
+                    order: ["createdAt"],
+                    where: {
+                        [Op.and]: [{ user_id: user.id }, { active: true }],
+                    },
+                }).then((quiz) => {
+                    if (quiz) {
+                        const created = new Date(quiz.createdAt);
+                        const expires = new Date(created.getTime() + 24 * 60 * 60 * 1000)
+                        if (expires >= new Date()) {
+                            message.reply("You already have a pending captcha. You can request a new one 24 hours after the active captcha was requested.");
                         }
-                    });
-                }
+                    } else {
+                        send_captcha(user);
+                    }
+                });
+            } else {
                 send_captcha(user);
             }
             return;
         }
 
+        // Handle captcha answers in DMs
         psql.Captcha.findOne({
             where: {
                 [Op.and]: [{ user_id: message.author.id }, { active: true }]
@@ -243,7 +254,7 @@ function validate_environment(variable_keys: string[]): boolean {
             const created = new Date(c.createdAt);
             const expires = new Date(created.getTime() + 24 * 60 * 60 * 1000);
             if (expires < new Date()) {
-                message.channel.send("An active captcha was not found for you.");
+                message.channel.send("Your captcha has expired, please request a new one.");
                 return;
             }
 
@@ -259,7 +270,7 @@ function validate_environment(variable_keys: string[]): boolean {
                     const completed = q.completed+1;
                     q.update({completed: completed});
 
-                    if (completed == 3) {
+                    if (completed >= 3) {
                         user.addRole(write_role);
                         const usr_str = `<${user.user.username}:${user.id}>`;
                         const role_str = `<${write_role.name}:${write_role.id}>`;
@@ -276,7 +287,7 @@ function validate_environment(variable_keys: string[]): boolean {
                         }
                     }).then((c: psql.Captcha) => {
                         c.update({active: true}).then((c: psql.Captcha) => {
-                            user.send('', make_captcha_message(c))
+                            user.send('', make_captcha_message(c, make_github_issue_suffix(c)))
                             log(`Sent captcha to user ${user.id} with answer ${c.answer}`);
                         });
                     });
@@ -290,7 +301,7 @@ function validate_environment(variable_keys: string[]): boolean {
                     const wrong = q.wrong+1;
                     q.update({wrong: wrong});
 
-                    if (wrong == 5) {
+                    if (wrong >= 5) {
                         psql.Captcha.update({
                             active: false 
                         },{
