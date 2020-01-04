@@ -18,9 +18,21 @@ let instance: DB;
 export class Captcha extends Model {
     public id!: string;
     public user_id!: string;
+    public quiz_id!: string;
+    public text!: string;
     public answer!: string;
     public active!: boolean;
     public completed!: boolean;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
+};
+
+export class Quiz extends Model {
+    public id!: string;
+    public user_id!: string;
+    public active!: boolean;
+    public wrong!: number;
+    public completed!: number;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 };
@@ -52,11 +64,19 @@ export class DB {
                 primaryKey: true,
             },
             user_id: {
-                type: DataTypes.STRING(256),
+                type: DataTypes.STRING(1000),
+                allowNull: false,
+            },
+            quiz_id: {
+                type: DataTypes.STRING(1000),
+                allowNull: false,
+            },
+            text: {
+                type: DataTypes.STRING(1000),
                 allowNull: false,
             },
             answer: {
-                type: DataTypes.STRING(256),
+                type: DataTypes.STRING(1000),
                 allowNull: false,
             },
             active: {
@@ -72,6 +92,38 @@ export class DB {
         }, {
             sequelize: this.connection,
             tableName: "captchas",
+        });
+
+
+        Quiz.init({
+            id: {
+                type: DataTypes.UUID,
+                defaultValue: Sequelize.literal("uuid_generate_v4()"),
+                allowNull: false,
+                primaryKey: true,
+            },
+            user_id: {
+                type: DataTypes.STRING(1000),
+                allowNull: false,
+            },
+            active: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: true,
+                allowNull: false,
+            },
+            wrong: {
+                type: DataTypes.INTEGER,
+                defaultValue: 0,
+                allowNull: false,
+            },
+            completed: {
+                type: DataTypes.INTEGER,
+                defaultValue: 0,
+                allowNull: false,
+            }
+        }, {
+            sequelize: this.connection,
+            tableName: "quizs",
         });
     }
 }
