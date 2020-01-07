@@ -39,7 +39,7 @@ jobs:
       run: |
         npm run build
       env:
-        GATEKEEPER_DISCORD_TOKEN: ${{ secrets.GATEKEEPER_DB_USR }}
+        GATEKEEPER_DISCORD_TOKEN: ${{ secrets.GATEKEEPER_DISCORD_TOKEN }}
     - name: Test
       run: |
         npm run test
