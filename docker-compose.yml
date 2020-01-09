@@ -1,0 +1,9 @@
+version: "3.7"
+
+services:
+  gatekeeper:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command: node /usr/src/app/dist/main.js
+    container_name: gatekeeper
