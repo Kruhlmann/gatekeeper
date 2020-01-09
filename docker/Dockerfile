@@ -6,4 +6,4 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-CMD ["node", "/usr/src/app/dist/main.js"]
+CMD ["node", "/usr/src/app/dist/src/main.js"]

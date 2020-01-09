@@ -2,8 +2,10 @@ version: "3.7"
 
 services:
   gatekeeper:
+    env_file:
+      - .env
     build:
       context: .
       dockerfile: docker/Dockerfile
-    command: node /usr/src/app/dist/main.js
+    command: node /usr/src/app/dist/src/main.js
     container_name: gatekeeper
