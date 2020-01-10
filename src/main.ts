@@ -72,13 +72,13 @@ function make_github_issue_suffix(captcha: psql.Captcha): string {
  */
 function send_captcha(user: discord.GuildMember) {
     psql.Quiz.update({
-        active: false 
+        active: false
     },{
         where: { user_id: user.id }
     }).then(() => {
 
         psql.Captcha.update({
-            active: false 
+            active: false
         },{
             where: { user_id: user.id }
         }).then(() => {
@@ -198,7 +198,6 @@ function validate_environment(variable_keys: string[]): boolean {
             return;
         }
 
-
         const guild = discord_client.guilds.get(config.guild_id);
         const user = guild.members.get(message.author.id);
         const write_role = guild.roles.get(config.role_ids.write);
@@ -258,8 +257,8 @@ function validate_environment(variable_keys: string[]): boolean {
                 return;
             }
 
-
-            if (c.answer === message.content) {
+            const parsed_content = parseFloat(message.content)
+            if (c.answer === parsed_content.toFixed(1)) {
                 c.update({ completed: true, active: false });
 
                 psql.Quiz.findOne({
@@ -303,7 +302,7 @@ function validate_environment(variable_keys: string[]): boolean {
 
                     if (wrong >= 5) {
                         psql.Captcha.update({
-                            active: false 
+                            active: false
                         },{
                             where: { user_id: user.id }
                         }).then(() => {
