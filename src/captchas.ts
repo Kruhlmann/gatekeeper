@@ -137,7 +137,7 @@ export function hit_cap_generator(_scenario?: CombatScenario,
             case "glancing":
                 const glancing_chance = 10 + ((scenario.target.defense - Math.min(300, scenario.weapon.skill)) * 2);
                 answer = Math.ceil(glancing_chance / 10) * 10;
-                attack_query = "the chance that you land a glancing blow (**rounded up to nearest 1/10th**)?";
+                attack_query = "the chance that your auto attacks land a glancing blow (**rounded up to nearest 1/10th**)?";
                 answer_example = "5.2";
                 break;
             default:
