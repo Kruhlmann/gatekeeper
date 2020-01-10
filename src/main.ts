@@ -282,7 +282,7 @@ function validate_environment(variable_keys: string[]): boolean {
 
                     psql.Captcha.findOne({
                         where: {
-                            [Op.and]: [{ quiz_id: q.id }, { completed: false }]
+                            [Op.and]: [{ quiz_id: q.id, completed: false, active: false }]
                         }
                     }).then((c: psql.Captcha) => {
                         c.update({active: true}).then((c: psql.Captcha) => {
