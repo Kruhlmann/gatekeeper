@@ -145,13 +145,13 @@ export function hit_cap_generator(_scenario?: CombatScenario,
         }
     } else {
         // No mitigation type means hit cap calculation.
-        let miss_chance = Math.ceil(5 + scenario.skill_delta * miss_modifier);
+        let miss_chance = 5 + scenario.skill_delta * miss_modifier;
         // DWMissChance = NormalMissChance * 0.8 + 20%.
         // This only applies to white hits.
         if (scenario.weapon.subtype === "dual wielded" && !yellow_hits) {
             miss_chance = miss_chance * 0.8 + 20;
         }
-        answer = miss_chance + miss_penalty;
+        answer = Math.ceil(miss_chance + miss_penalty);
         attack_query = "your hit cap (rounded up to nearest 1/10th)?"
         answer_example = "13.1";
     }
