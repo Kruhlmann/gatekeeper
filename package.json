@@ -27,7 +27,7 @@
     "@types/sequelize": "^4.28.8",
     "discord.js": "^11.5.1",
     "node-pg-migrate": "^3.23.3",
-    "pg": "^7.14.0",
+    "pg": "^7.16.1",
     "sequelize": "^5.21.2",
     "typescript": "^3.6.4",
     "uws": "^100.0.1"
