@@ -76,10 +76,10 @@ describe("CAPTCHAs", () => {
                     });
 
                     describe("Dual wielding", () => {
-                        it("should have the answer 24.8", () => {
+                        it("should have the answer 25.0", () => {
                             const scenario = scenarios.hit.orc.dw;
                             const answer = hit_cap_generator(scenario, "none", false, true).answer;
-                            expect(answer).to.equal("24.8");
+                            expect(answer).to.equal("25.0");
                         });
                     });
                 });
@@ -114,10 +114,10 @@ describe("CAPTCHAs", () => {
                     });
 
                     describe("Dual wielding", () => {
-                        it("should have the answer 24.8", () => {
+                        it("should have the answer 25.0", () => {
                             const scenario = scenarios.hit.orc.dw;
                             const answer = hit_cap_generator(scenario, "none", false, false).answer;
-                            expect(answer).to.equal("24.8");
+                            expect(answer).to.equal("25.0");
                         });
                     });
                 });
@@ -172,10 +172,10 @@ describe("CAPTCHAs", () => {
                     });
 
                     describe("Dual wielding", () => {
-                        it("should have the answer 27.4", () => {
+                        it("should have the answer 28.0", () => {
                             const scenario = scenarios.hit.noorc.dw;
                             const answer = hit_cap_generator(scenario, "none", false, true).answer;
-                            expect(answer).to.equal("27.4");
+                            expect(answer).to.equal("28.0");
                         });
                     });
                 });
@@ -210,10 +210,10 @@ describe("CAPTCHAs", () => {
                     });
 
                     describe("Dual wielding", () => {
-                        it("should have the answer 27.4", () => {
+                        it("should have the answer 28.0", () => {
                             const scenario = scenarios.hit.noorc.dw;
                             const answer = hit_cap_generator(scenario, "none", false, false).answer;
-                            expect(answer).to.equal("27.4");
+                            expect(answer).to.equal("28.0");
                         });
                     });
                 });
