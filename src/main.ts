@@ -5,18 +5,13 @@
  */
 
 import * as discord from "discord.js";
-import { handle_exception, log } from "./io";
-import { LoggingLevel } from "./typings/types";
-import * as config from "../config.json";
-import * as psql from "./db";
-import {
-    get_unique_captchas,
-    make_captcha_message,
-    send_captcha,
-} from "./captcha_broker";
 import { Op } from "sequelize";
-import * as Sentry from "@sentry/node";
+import * as config from "../config.json";
+import { make_captcha_message, send_captcha } from "./captcha_broker";
+import * as psql from "./db";
+import { handle_exception, log, init_sentry } from "./io";
 import { t_diff } from "./time";
+import { LoggingLevel } from "./typings/types";
 
 const req_env_vars = [
     "GATEKEEPER_DB_USR",
@@ -89,14 +84,8 @@ function validate_environment(variable_keys: string[]): boolean {
         process.exit(1);
     }
 
-    if (process.env.hasOwnProperty("GATEKEEPER_SENTRY_DSN")) {
-        Sentry.init({ dsn: process.env.GATEKEEPER_SENTRY_DSN });
-    } else {
-        log(
-            "No sentry DSN provided. Sentry logging is disabled.",
-            LoggingLevel.WAR
-        );
-    }
+    // Sentry logging
+    init_sentry();
 
     // Init discord virtual client.
     const discord_client = new discord.Client();
@@ -149,12 +138,7 @@ function validate_environment(variable_keys: string[]): boolean {
             }
 
             if (config.deployment_mode === "production") {
-                psql.Quiz.findOne({
-                    order: ["createdAt"],
-                    where: {
-                        [Op.and]: [{ user_id: user.id }, { active: true }],
-                    },
-                }).then((quiz) => {
+                psql.find_one(psql.Quiz, user.user).then((quiz: psql.Quiz) => {
                     if (quiz) {
                         const expires = new Date(quiz.createdAt);
                         expires.setDate(expires.getDate() + 1);
@@ -176,11 +160,7 @@ function validate_environment(variable_keys: string[]): boolean {
         }
 
         // Handle captcha answers in DMs
-        psql.Captcha.findOne({
-            where: {
-                [Op.and]: [{ user_id: message.author.id }, { active: true }],
-            },
-        })
+        psql.find_one(psql.Captcha, message.author)
             .then((c: psql.Captcha) => {
                 if (!c) {
                     message.channel.send(
@@ -204,92 +184,78 @@ function validate_environment(variable_keys: string[]): boolean {
                 if (c.answer === parsed_content.toFixed(1)) {
                     c.update({ completed: true, active: false });
 
-                    psql.Quiz.findOne({
-                        where: {
-                            [Op.and]: [
-                                { user_id: message.author.id },
-                                { active: true },
-                            ],
-                        },
-                    }).then((q: psql.Quiz) => {
-                        const completed = q.completed + 1;
-                        q.update({ completed: completed });
+                    psql.find_one(psql.Quiz, message.author).then(
+                        (q: psql.Quiz) => {
+                            const completed = q.completed + 1;
+                            q.update({ completed: completed });
 
-                        if (completed >= 3) {
-                            user.addRole(write_role);
-                            const usr_str = `<${user.user.username}:${user.id}>`;
-                            const role_str = `<${write_role.name}:${write_role.id}>`;
-                            log(
-                                `Added write role ${role_str} to user ${usr_str}`
-                            );
-                            message.channel.send(
-                                `\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`
-                            );
-                            return;
-                        } else {
-                            message.channel.send(
-                                `\`${message.content}\` is correct. You've completed ${completed}/3 captchas.`
-                            );
-                        }
-
-                        psql.Captcha.findOne({
-                            where: {
-                                [Op.and]: [
-                                    {
-                                        quiz_id: q.id,
-                                        completed: false,
-                                        active: false,
-                                    },
-                                ],
-                            },
-                        }).then((c: psql.Captcha) => {
-                            c.update({ active: true }).then(
-                                (c: psql.Captcha) => {
-                                    user.send(
-                                        "",
-                                        make_captcha_message(
-                                            c,
-                                            make_github_issue_suffix(c)
-                                        )
-                                    );
-                                    log(
-                                        `Sent captcha to user ${user.id} with answer ${c.answer}`
-                                    );
-                                }
-                            );
-                        });
-                    });
-                } else {
-                    psql.Quiz.findOne({
-                        where: {
-                            [Op.and]: [
-                                { user_id: message.author.id },
-                                { active: true },
-                            ],
-                        },
-                    }).then((q: psql.Quiz) => {
-                        const wrong = q.wrong + 1;
-                        q.update({ wrong: wrong });
-
-                        if (wrong >= 5) {
-                            psql.Captcha.update(
-                                {
-                                    active: false,
-                                },
-                                {
-                                    where: { user_id: user.id },
-                                }
-                            ).then(() => {
+                            if (completed >= 3) {
+                                user.addRole(write_role);
+                                const usr_str = `<${user.user.username}:${user.id}>`;
+                                const role_str = `<${write_role.name}:${write_role.id}>`;
+                                log(
+                                    `Added write role ${role_str} to user ${usr_str}`
+                                );
                                 message.channel.send(
-                                    `\`${message.content}\` is not correct. You've failed and may try again in 24 hours.`
+                                    `\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`
+                                );
+                                return;
+                            } else {
+                                message.channel.send(
+                                    `\`${message.content}\` is correct. You've completed ${completed}/3 captchas.`
+                                );
+                            }
+
+                            psql.Captcha.findOne({
+                                where: {
+                                    [Op.and]: [
+                                        {
+                                            quiz_id: q.id,
+                                            completed: false,
+                                            active: false,
+                                        },
+                                    ],
+                                },
+                            }).then((c: psql.Captcha) => {
+                                c.update({ active: true }).then(
+                                    (c: psql.Captcha) => {
+                                        user.send(
+                                            "",
+                                            make_captcha_message(
+                                                c,
+                                                make_github_issue_suffix(c)
+                                            )
+                                        );
+                                        log(
+                                            `Sent captcha to user ${user.id} with answer ${c.answer}`
+                                        );
+                                    }
                                 );
                             });
-                        } else {
-                            message.channel.send(
-                                `\`${message.content}\` is not correct. You've used ${wrong}/5 incorrect answers.`
-                            );
                         }
-                    });
+                    );
+                } else {
+                    psql.find_one(psql.Quiz, message.author).then(
+                        (q: psql.Quiz) => {
+                            const wrong = q.wrong + 1;
+                            q.update({ wrong: wrong });
+
+                            if (wrong >= 5) {
+                                psql.Captcha.update(
+                                    { active: false },
+                                    { where: { user_id: user.id } }
+                                ).then(() => {
+                                    message.channel.send(
+                                        `\`${message.content}\` is not correct. You've failed and may try again in 24 hours.`
+                                    );
+                                });
+                            } else {
+                                message.channel.send(
+                                    `\`${message.content}\` is not correct. You've used ${wrong}/5 incorrect answers.`
+                                );
+                            }
+                        }
+                    );
                 }
             })
             .catch((error) => {

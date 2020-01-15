@@ -4,18 +4,25 @@
  * @since 1.0.0
  */
 
+import * as Sentry from "@sentry/node";
 import * as fs from "fs";
 import * as path from "path";
-
 import * as config from "../config.json";
-
 import { LoggingLevel } from "./typings/types.js";
 
 const months = [
-    "January", "February", "March",
-    "April", "May", "June", "July",
-    "August", "September", "October",
-    "November", "December",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
 ];
 
 // Used for outputting formatted logs.
@@ -74,4 +81,22 @@ export function log(msg: string, level: LoggingLevel = LoggingLevel.INF): void {
     }
 
     fs.appendFileSync(log_path, `${formatted_message}\n`);
+}
+
+/**
+ * Initializes sentry logging if in production mode and a sentry DSN key was
+ * provided in the GATEKEEPER_SENTRY_DSN environment variable.
+ */
+export function init_sentry(): void {
+    if (config.deployment_mode !== "production") {
+        return;
+    }
+    if (process.env.hasOwnProperty("GATEKEEPER_SENTRY_DSN")) {
+        Sentry.init({ dsn: process.env.GATEKEEPER_SENTRY_DSN });
+    } else {
+        log(
+            "No sentry DSN provided. Sentry logging is disabled.",
+            LoggingLevel.WAR
+        );
+    }
 }

@@ -68,20 +68,12 @@ export function send_captcha(
 ) {
     try {
         psql.Quiz.update(
-            {
-                active: false,
-            },
-            {
-                where: { user_id: user.id },
-            }
+            { active: false },
+            { where: { user_id: user.id } }
         ).then(() => {
             psql.Captcha.update(
-                {
-                    active: false,
-                },
-                {
-                    where: { user_id: user.id },
-                }
+                { active: false },
+                { where: { user_id: user.id } }
             ).then(() => {
                 psql.Quiz.create({
                     user_id: user.id,
