@@ -16,19 +16,27 @@ const weapons = [
     ["staff", "2 handed"],
     ["polearm", "2 handed"],
 ];
-const targets = ["Firelord", "Lava Reaver", "Lava Surger", "Firewalker", "Core Hound", "Lava Annihilator"];
+const targets = [
+    "Firelord",
+    "Lava Reaver",
+    "Lava Surger",
+    "Firewalker",
+    "Core Hound",
+    "Lava Annihilator",
+];
 const min_lvl = 57;
 const max_lvl = 63;
 
 function title_case(str: string): string {
-   let splitStr = str.toLowerCase().split(" ");
-   for (let i = 0; i < splitStr.length; i++) {
-       // You do not need to check if i is larger than splitStr length, as your for does that for you
-       // Assign it back to the array
-       splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
-   }
-   // Directly return the joined string
-   return splitStr.join(" ");
+    let splitStr = str.toLowerCase().split(" ");
+    for (let i = 0; i < splitStr.length; i++) {
+        // You do not need to check if i is larger than splitStr length, as your for does that for you
+        // Assign it back to the array
+        splitStr[i] =
+            splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+    }
+    // Directly return the joined string
+    return splitStr.join(" ");
 }
 
 /**
@@ -54,18 +62,24 @@ function make_scenario(): Scenario {
     const guild_noun = arr_random(nouns.words);
     const guild_name = title_case(`${guild_adjective} ${guild_noun}`);
 
-    return { sex, race, sex_prefix, guild_name }
+    return { sex, race, sex_prefix, guild_name };
 }
 
 function make_combat_scenario(): CombatScenario {
     const scenario = make_scenario();
     const [weapon_type, weapon_subtype]: [string, string] = arr_random(weapons);
     const orc_factor = scenario.race === "orc" && weapon_type === "axe" ? 5 : 0;
-    const human_factor = scenario.race === "human" && (weapon_type === "mace" || weapon_type === "sword") ? 5 : 0;
+    const human_factor =
+        scenario.race === "human" &&
+        (weapon_type === "mace" || weapon_type === "sword")
+            ? 5
+            : 0;
     const weapon_skill = 300 + orc_factor + human_factor;
 
     const target_name = arr_random(targets) as string;
-    const target_lvl = Math.round(Math.random() * (max_lvl - min_lvl) + min_lvl);
+    const target_lvl = Math.round(
+        Math.random() * (max_lvl - min_lvl) + min_lvl
+    );
 
     return {
         ...scenario,
@@ -80,7 +94,7 @@ function make_combat_scenario(): CombatScenario {
             defense: target_lvl * 5,
         },
         skill_delta: target_lvl * 5 - weapon_skill,
-    }
+    };
 }
 
 /**
@@ -96,15 +110,22 @@ function make_combat_scenario(): CombatScenario {
  *
  * @returns - Message content object.
  */
-export function hit_cap_generator(_scenario?: CombatScenario,
-                           _mitigation_type?: string,
-                           _yellow_hits?: boolean,
-                           _front?: boolean,
+export function hit_cap_generator(
+    _scenario?: CombatScenario,
+    _mitigation_type?: string,
+    _yellow_hits?: boolean,
+    _front?: boolean
 ): Captcha {
     const scenario = _scenario ? _scenario : make_combat_scenario();
-    const mitigation_type = _mitigation_type ? _mitigation_type : arr_random(["none", "dodge", "block", "glancing"]);
-    const yellow_hits = _yellow_hits !== undefined ? _yellow_hits : Math.random() < 0.5;
-    const front = _front !== undefined ? _front || mitigation_type === "block" : Math.random() < 0.5 || mitigation_type === "block";
+    const mitigation_type = _mitigation_type
+        ? _mitigation_type
+        : arr_random(["none", "dodge", "block", "glancing"]);
+    const yellow_hits =
+        _yellow_hits !== undefined ? _yellow_hits : Math.random() < 0.5;
+    const front =
+        _front !== undefined
+            ? _front || mitigation_type === "block"
+            : Math.random() < 0.5 || mitigation_type === "block";
     const miss_modifier = scenario.skill_delta > 10 ? 0.2 : 0.1;
     const miss_penalty = scenario.skill_delta > 10 ? 1 : 0;
 
@@ -119,25 +140,35 @@ export function hit_cap_generator(_scenario?: CombatScenario,
                 // TODO: This has no formula yet.
                 const parry_chance = 10;
                 answer = Math.ceil(parry_chance / 10) * 10;
-                attack_query = "the chance that your attacks are parried (**rounded up to nearest 1/10th**)?";
+                attack_query =
+                    "the chance that your attacks are parried (**rounded up to nearest 1/10th**)?";
                 answer_example = "19.4";
                 break;
             case "block":
-                const block_chance = front ? Math.min(5, 5 + scenario.skill_delta * 0.1) : 0;
+                const block_chance = front
+                    ? Math.min(5, 5 + scenario.skill_delta * 0.1)
+                    : 0;
                 answer = block_chance;
-                attack_query = "the chance that your attacks are blocked (**rounded up to nearest 1/10th**)?";
+                attack_query =
+                    "the chance that your attacks are blocked (**rounded up to nearest 1/10th**)?";
                 answer_example = "14.2";
                 break;
             case "dodge":
                 const dodge_chance = 5 + scenario.skill_delta * 0.1;
                 answer = dodge_chance;
-                attack_query = "the chance that your attacks are dodged (**rounded up to nearest 1/10th**)?";
+                attack_query =
+                    "the chance that your attacks are dodged (**rounded up to nearest 1/10th**)?";
                 answer_example = "7.2";
                 break;
             case "glancing":
-                const glancing_chance = 10 + ((scenario.target.defense - Math.min(300, scenario.weapon.skill)) * 2);
+                const glancing_chance =
+                    10 +
+                    (scenario.target.defense -
+                        Math.min(300, scenario.weapon.skill)) *
+                        2;
                 answer = Math.ceil(glancing_chance / 10) * 10;
-                attack_query = "the chance that your auto attacks land a glancing blow (**rounded up to nearest 1/10th**)?";
+                attack_query =
+                    "the chance that your auto attacks land a glancing blow (**rounded up to nearest 1/10th**)?";
                 answer_example = "5.2";
                 break;
             default:
@@ -152,17 +183,29 @@ export function hit_cap_generator(_scenario?: CombatScenario,
             miss_chance = miss_chance * 0.8 + 20;
         }
         answer = Math.ceil(miss_chance + miss_penalty);
-        attack_query = "your hit cap (rounded up to nearest 1/10th)?"
+        attack_query = `your **${
+            yellow_hits ? "yellow" : "white"
+        }** hit cap (rounded up to nearest 1/10th)?`;
         answer_example = "13.1";
     }
 
     // Message text.
-    const scenario_txt = `You (a **${scenario.sex_prefix !== "" ? `${scenario.sex_prefix} ` : ""}${scenario.sex} ${scenario.race}** DPS fury warrior in **<${scenario.guild_name}>**) is attacking a level **${scenario.target.level}** **${scenario.target.name}** from **${front ? "the front" : "behind"}** using your **${scenario.weapon.subtype} ${scenario.weapon.type}${scenario.weapon.subtype == "dual wielded" ? "s" : ""}**`;
+    const scenario_txt = `You (a **${
+        scenario.sex_prefix !== "" ? `${scenario.sex_prefix} ` : ""
+    }${scenario.sex} ${scenario.race}** DPS fury warrior in **<${
+        scenario.guild_name
+    }>**) is attacking a level **${scenario.target.level}** **${
+        scenario.target.name
+    }** from **${front ? "the front" : "behind"}** using your **${
+        scenario.weapon.subtype
+    } ${scenario.weapon.type}${
+        scenario.weapon.subtype == "dual wielded" ? "s" : ""
+    }**`;
     const question = `Given these parameters what is ${attack_query}\n\nAnswer example: \`${answer_example}\``;
 
     return {
         answer: Math.max(0, answer).toFixed(1),
-        text: `${scenario_txt}\n\n${question}`
+        text: `${scenario_txt}\n\n${question}`,
     };
 }
 
@@ -198,6 +241,5 @@ export const generators: Function[] = [
  * @returns - Generator function.
  */
 export function generate(): Captcha {
-    return arr_random(generators)()
+    return arr_random(generators)();
 }
-
