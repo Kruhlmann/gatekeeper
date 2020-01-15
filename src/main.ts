@@ -13,7 +13,7 @@ import * as psql from "./db";
 import { Op } from "sequelize";
 import * as Sentry from "@sentry/node";
 import { Captcha } from "./typings/types";
-import * as moment from "moment";
+import { t_diff } from "./time";
 
 const req_env_vars = [
     "GATEKEEPER_DB_USR",
@@ -222,7 +222,9 @@ function validate_environment(variable_keys: string[]): boolean {
         // Only perform the role_routine for setting read roles if one is in the config
         const read_role_id = config.role_ids.read;
         if (read_role_id && read_role_id.length) {
-            log(`Found read role id '${read_role_id}' in config. Will assign to users without the role.`);
+            log(
+                `Found read role id '${read_role_id}' in config. Will assign to users without the role.`
+            );
             const guild = discord_client.guilds.get(config.guild_id);
             const read_role = guild.roles.get(read_role_id);
 
@@ -263,11 +265,14 @@ function validate_environment(variable_keys: string[]): boolean {
                     },
                 }).then((quiz) => {
                     if (quiz) {
-                        const created = moment(quiz.createdAt);
-                        const expires = created.add(1, 'day');
-                        if (expires >= moment()) {
+                        const expires = new Date(quiz.createdAt);
+                        expires.setDate(expires.getDate() + 1);
+                        if (expires >= new Date()) {
                             return message.reply(
-                                `You already have a pending captcha. You can request a new one ${expires.fromNow()}.`
+                                `You already have a pending captcha. You can request a new one ${t_diff(
+                                    expires,
+                                    new Date()
+                                )}.`
                             );
                         }
                     }
