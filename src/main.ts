@@ -16,6 +16,7 @@ import {
 } from "./captcha_broker";
 import { Op } from "sequelize";
 import * as Sentry from "@sentry/node";
+import { t_diff } from "./time";
 
 const req_env_vars = [
     "GATEKEEPER_DB_USR",
@@ -109,11 +110,18 @@ function validate_environment(variable_keys: string[]): boolean {
     discord_client.on("ready", () => {
         log(`Started gatekeeper in ${config.deployment_mode} mode`);
 
-        const guild = discord_client.guilds.get(config.guild_id);
-        const read_role = guild.roles.get(config.role_ids.read);
+        // Only perform the role_routine for setting read roles if one is in the config
+        const read_role_id = config.role_ids.read;
+        if (read_role_id && read_role_id.length) {
+            log(
+                `Found read role id '${read_role_id}' in config. Will assign to users without the role.`
+            );
+            const guild = discord_client.guilds.get(config.guild_id);
+            const read_role = guild.roles.get(read_role_id);
 
-        role_routine(guild, read_role);
-        setInterval(() => role_routine(guild, read_role), 5000);
+            role_routine(guild, read_role);
+            setInterval(() => role_routine(guild, read_role), 5000);
+        }
     });
 
     discord_client.on("message", (message: discord.Message) => {
@@ -148,18 +156,18 @@ function validate_environment(variable_keys: string[]): boolean {
                     },
                 }).then((quiz) => {
                     if (quiz) {
-                        const created = new Date(quiz.createdAt);
-                        const expires = new Date(
-                            created.getTime() + 24 * 60 * 60 * 1000
-                        );
+                        const expires = new Date(quiz.createdAt);
+                        expires.setDate(expires.getDate() + 1);
                         if (expires >= new Date()) {
-                            message.reply(
-                                "You already have a pending captcha. You can request a new one 24 hours after the active captcha was requested."
+                            return message.reply(
+                                `You already have a pending captcha. You can request a new one ${t_diff(
+                                    expires,
+                                    new Date()
+                                )}.`
                             );
                         }
-                    } else {
-                        send_captcha(user, message.channel);
                     }
+                    send_captcha(user, message.channel);
                 });
             } else {
                 send_captcha(user, message.channel);
