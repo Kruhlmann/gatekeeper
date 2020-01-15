@@ -62,9 +62,8 @@ function make_captcha_message(
     return new discord.RichEmbed()
         .setTitle("Fight Club Captcha")
         .setDescription(captcha.text + suffix)
-        .setThumbnail(
-            "https://img.rankedboost.com/wp-content/uploads/2019/05/WoW-Classic-Warrior-Guide-150x150.png"
-        );
+        .attachFile("./res/warrior_icon.png")
+        .setThumbnail("attachment://warrior_icon.png");
 }
 
 function make_github_issue_suffix(captcha: psql.Captcha): string {
