@@ -65,6 +65,11 @@ function make_scenario(): Scenario {
     return { sex, race, sex_prefix, guild_name };
 }
 
+/**
+ * Generates a random combat scenario.
+ *
+ * @returns - Scenario data.
+ */
 function make_combat_scenario(): CombatScenario {
     const scenario = make_scenario();
     const [weapon_type, weapon_subtype]: [string, string] = arr_random(weapons);
@@ -97,6 +102,77 @@ function make_combat_scenario(): CombatScenario {
     };
 }
 
+function calc_mitigation(
+    mitigation_type: string,
+    front: boolean,
+    scenario: CombatScenario,
+    yellow_hits: boolean
+): { answer: number; query: string; example: string } {
+    const miss_modifier = scenario.skill_delta > 10 ? 0.2 : 0.1;
+    const miss_penalty = scenario.skill_delta > 10 ? 1 : 0;
+    let answer: number;
+    let example: string;
+    let query: string;
+
+    if (mitigation_type !== "none") {
+        // Mitigation type is either block, dodge, parry or glancing.
+        switch (mitigation_type) {
+            case "parry":
+                // TODO: This has no formula yet.
+                const parry_chance = 10;
+                answer = Math.ceil(parry_chance / 10) * 10;
+                query =
+                    "the chance that your attacks are parried (**rounded up to nearest 1/10th**)?";
+                example = "19.4";
+                break;
+            case "block":
+                const block_chance = front
+                    ? Math.min(5, 5 + scenario.skill_delta * 0.1)
+                    : 0;
+                answer = block_chance;
+                query =
+                    "the chance that your attacks are blocked (**rounded up to nearest 1/10th**)?";
+                example = "14.2";
+                break;
+            case "dodge":
+                const dodge_chance = 5 + scenario.skill_delta * 0.1;
+                answer = dodge_chance;
+                query =
+                    "the chance that your attacks are dodged (**rounded up to nearest 1/10th**)?";
+                example = "7.2";
+                break;
+            case "glancing":
+                const glancing_chance =
+                    10 +
+                    (scenario.target.defense -
+                        Math.min(300, scenario.weapon.skill)) *
+                        2;
+                answer = Math.ceil(glancing_chance / 10) * 10;
+                query =
+                    "the chance that your auto attacks land a glancing blow (**rounded up to nearest 1/10th**)?";
+                example = "5.2";
+                break;
+            default:
+                throw new Error(`Unknown mitigation type: ${mitigation_type}`);
+        }
+    } else {
+        // No mitigation type means hit cap calculation.
+        let miss_chance = 5 + scenario.skill_delta * miss_modifier;
+        // DWMissChance = NormalMissChance * 0.8 + 20%.
+        // This only applies to white hits.
+        if (scenario.weapon.subtype === "dual wielded" && !yellow_hits) {
+            miss_chance = miss_chance * 0.8 + 20;
+        }
+        answer = Math.ceil(miss_chance + miss_penalty);
+        query = `your **${
+            yellow_hits ? "yellow" : "white"
+        }** hit cap (rounded up to nearest 1/10th)?`;
+        example = "13.1";
+    }
+
+    return { answer, query, example };
+}
+
 /**
  * Hit cap question generator.
  * What is the chance for a players attacks to be [missed/dodged/glanced, if from the front then also blocked]
@@ -126,68 +202,12 @@ export function hit_cap_generator(
         _front !== undefined
             ? _front || mitigation_type === "block"
             : Math.random() < 0.5 || mitigation_type === "block";
-    const miss_modifier = scenario.skill_delta > 10 ? 0.2 : 0.1;
-    const miss_penalty = scenario.skill_delta > 10 ? 1 : 0;
-
-    let answer: number;
-    let answer_example: string;
-    let attack_query: string;
-
-    if (mitigation_type !== "none") {
-        // Mitigation type is either block, dodge, parry or glancing.
-        switch (mitigation_type) {
-            case "parry":
-                // TODO: This has no formula yet.
-                const parry_chance = 10;
-                answer = Math.ceil(parry_chance / 10) * 10;
-                attack_query =
-                    "the chance that your attacks are parried (**rounded up to nearest 1/10th**)?";
-                answer_example = "19.4";
-                break;
-            case "block":
-                const block_chance = front
-                    ? Math.min(5, 5 + scenario.skill_delta * 0.1)
-                    : 0;
-                answer = block_chance;
-                attack_query =
-                    "the chance that your attacks are blocked (**rounded up to nearest 1/10th**)?";
-                answer_example = "14.2";
-                break;
-            case "dodge":
-                const dodge_chance = 5 + scenario.skill_delta * 0.1;
-                answer = dodge_chance;
-                attack_query =
-                    "the chance that your attacks are dodged (**rounded up to nearest 1/10th**)?";
-                answer_example = "7.2";
-                break;
-            case "glancing":
-                const glancing_chance =
-                    10 +
-                    (scenario.target.defense -
-                        Math.min(300, scenario.weapon.skill)) *
-                        2;
-                answer = Math.ceil(glancing_chance / 10) * 10;
-                attack_query =
-                    "the chance that your auto attacks land a glancing blow (**rounded up to nearest 1/10th**)?";
-                answer_example = "5.2";
-                break;
-            default:
-                throw new Error(`Unknown mitigation type: ${mitigation_type}`);
-        }
-    } else {
-        // No mitigation type means hit cap calculation.
-        let miss_chance = 5 + scenario.skill_delta * miss_modifier;
-        // DWMissChance = NormalMissChance * 0.8 + 20%.
-        // This only applies to white hits.
-        if (scenario.weapon.subtype === "dual wielded" && !yellow_hits) {
-            miss_chance = miss_chance * 0.8 + 20;
-        }
-        answer = Math.ceil(miss_chance + miss_penalty);
-        attack_query = `your **${
-            yellow_hits ? "yellow" : "white"
-        }** hit cap (rounded up to nearest 1/10th)?`;
-        answer_example = "13.1";
-    }
+    const mitigation_calc = calc_mitigation(
+        mitigation_type,
+        front,
+        scenario,
+        yellow_hits
+    );
 
     // Message text.
     const scenario_txt = `You (a **${
@@ -201,10 +221,10 @@ export function hit_cap_generator(
     } ${scenario.weapon.type}${
         scenario.weapon.subtype == "dual wielded" ? "s" : ""
     }**`;
-    const question = `Given these parameters what is ${attack_query}\n\nAnswer example: \`${answer_example}\``;
+    const question = `Given these parameters what is ${mitigation_calc.query}\n\nAnswer example: \`${mitigation_calc.example}\``;
 
     return {
-        answer: Math.max(0, answer).toFixed(1),
+        answer: Math.max(0, mitigation_calc.answer).toFixed(1),
         text: `${scenario_txt}\n\n${question}`,
     };
 }
