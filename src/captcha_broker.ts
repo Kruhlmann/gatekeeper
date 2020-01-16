@@ -58,6 +58,33 @@ export function make_captcha_message(
 }
 
 /**
+ * Registers a CAPTCHA in the database.
+ *
+ * @async
+ * @param quiz_id - ID of associated quiz.
+ * @param user_id - Discord ID of user.
+ * @param text - CAPTCHA prompt.
+ * @param answer - Answer to CAPTCHA.
+ * @param active - State of the CAPTCHA.
+ * @returns - Created CAPTCHA object.
+ */
+export async function create_captcha(
+    quiz_id: string,
+    user_id: string,
+    text: string,
+    answer: string,
+    active: boolean
+): Promise<psql.Captcha> {
+    return psql.Captcha.create({
+        quiz_id,
+        user_id,
+        text,
+        answer,
+        active,
+    });
+}
+
+/**
  * Sends a captcha to a user to allow them to optain write permissions.
  *
  * @param user - User to send captcha to.
@@ -82,13 +109,13 @@ export function send_captcha(
                     let first = true;
                     for (let captcha of get_unique_captchas()) {
                         if (first) {
-                            psql.Captcha.create({
-                                quiz_id: q.id,
-                                user_id: user.id,
-                                text: captcha.text,
-                                answer: captcha.answer,
-                                active: true,
-                            }).then((c: psql.Captcha) => {
+                            create_captcha(
+                                q.id,
+                                user.id,
+                                captcha.text,
+                                captcha.answer,
+                                true
+                            ).then((c: psql.Captcha) => {
                                 user.send(
                                     captcha_preface,
                                     make_captcha_message(
@@ -101,13 +128,13 @@ export function send_captcha(
                                 );
                             });
                         } else {
-                            psql.Captcha.create({
-                                quiz_id: q.id,
-                                user_id: user.id,
-                                text: captcha.text,
-                                answer: captcha.answer,
-                                active: false,
-                            });
+                            create_captcha(
+                                q.id,
+                                user.id,
+                                captcha.text,
+                                captcha.answer,
+                                false
+                            );
                         }
                         first = false;
                     }
