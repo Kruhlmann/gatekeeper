@@ -34,27 +34,6 @@ function make_github_issue_suffix(captcha: psql.Captcha): string {
 }
 
 /**
- * Adds the default read-only role to all members without it.
- *
- * @param guild - Guild to apply read role to.
- * @param read_role - Role to apply to members.
- */
-function role_routine(guild: discord.Guild, read_role: discord.Role): void {
-    guild.members.forEach((user) => {
-        const has_read_role = !!user.roles.find((role) => {
-            return role.id === read_role.id;
-        });
-
-        if (!has_read_role) {
-            user.addRole(read_role);
-            const usr_str = `<${user.user.username}:${user.id}>`;
-            const role_str = `<${read_role.name}:${read_role.id}>`;
-            log(`Added read role ${role_str} to user ${usr_str}`);
-        }
-    });
-}
-
-/**
  * Ensures the prescense of all required environment variables. If any are
  * missing the program closes.
  *
@@ -98,19 +77,6 @@ function validate_environment(variable_keys: string[]): boolean {
 
     discord_client.on("ready", () => {
         log(`Started gatekeeper in ${config.deployment_mode} mode`);
-
-        // Only perform the role_routine for setting read roles if one is in the config
-        const read_role_id = config.role_ids.read;
-        if (read_role_id && read_role_id.length) {
-            log(
-                `Found read role id '${read_role_id}' in config. Will assign to users without the role.`
-            );
-            const guild = discord_client.guilds.get(config.guild_id);
-            const read_role = guild.roles.get(read_role_id);
-
-            role_routine(guild, read_role);
-            setInterval(() => role_routine(guild, read_role), 5000);
-        }
     });
 
     discord_client.on("message", (message: discord.Message) => {
@@ -121,9 +87,9 @@ function validate_environment(variable_keys: string[]): boolean {
 
         const guild = discord_client.guilds.get(config.guild_id);
         const user = guild.members.get(message.author.id);
-        const write_role = guild.roles.get(config.role_ids.write);
+        const write_role = guild.roles.get(config.role);
         const has_write_role = !!user.roles.find((role) => {
-            return role.id === config.role_ids.write;
+            return role.id === config.role;
         });
 
         // Ignore messages from those already with the write role
