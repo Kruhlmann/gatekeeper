@@ -173,6 +173,23 @@ function calc_mitigation(
     return { answer, query, example };
 }
 
+function generate_scenario_text(
+    scenario: CombatScenario,
+    front: boolean
+): string {
+    return `You (a **${
+        scenario.sex_prefix !== "" ? `${scenario.sex_prefix} ` : ""
+    }${scenario.sex} ${scenario.race}** DPS fury warrior in **<${
+        scenario.guild_name
+    }>**) is attacking a level **${scenario.target.level}** **${
+        scenario.target.name
+    }** from **${front ? "the front" : "behind"}** using your **${
+        scenario.weapon.subtype
+    } ${scenario.weapon.type}${
+        scenario.weapon.subtype == "dual wielded" ? "s" : ""
+    }**`;
+}
+
 /**
  * Hit cap question generator.
  * What is the chance for a players attacks to be [missed/dodged/glanced, if from the front then also blocked]
@@ -210,17 +227,7 @@ export function hit_cap_generator(
     );
 
     // Message text.
-    const scenario_txt = `You (a **${
-        scenario.sex_prefix !== "" ? `${scenario.sex_prefix} ` : ""
-    }${scenario.sex} ${scenario.race}** DPS fury warrior in **<${
-        scenario.guild_name
-    }>**) is attacking a level **${scenario.target.level}** **${
-        scenario.target.name
-    }** from **${front ? "the front" : "behind"}** using your **${
-        scenario.weapon.subtype
-    } ${scenario.weapon.type}${
-        scenario.weapon.subtype == "dual wielded" ? "s" : ""
-    }**`;
+    const scenario_txt = generate_scenario_text(scenario, front);
     const question = `Given these parameters what is ${mitigation_calc.query}\n\nAnswer example: \`${mitigation_calc.example}\``;
 
     return {
