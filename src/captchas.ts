@@ -72,33 +72,25 @@ function make_scenario(): Scenario {
  */
 function make_combat_scenario(): CombatScenario {
     const scenario = make_scenario();
-    const [weapon_type, weapon_subtype]: [string, string] = arr_random(weapons);
-    const orc_factor = scenario.race === "orc" && weapon_type === "axe" ? 5 : 0;
+    const [wpn_type, wpn_subtype]: [string, string] = arr_random(weapons);
+    const orc_factor = scenario.race === "orc" && wpn_type === "axe" ? 5 : 0;
     const human_factor =
         scenario.race === "human" &&
-        (weapon_type === "mace" || weapon_type === "sword")
+        (wpn_type === "mace" || wpn_type === "sword")
             ? 5
             : 0;
-    const weapon_skill = 300 + orc_factor + human_factor;
+    const wpn_skill = 300 + orc_factor + human_factor;
 
-    const target_name = arr_random(targets) as string;
-    const target_lvl = Math.round(
-        Math.random() * (max_lvl - min_lvl) + min_lvl
-    );
+    const tar_nam = arr_random(targets) as string;
+    const tar_lvl = Math.round(Math.random() * (max_lvl - min_lvl) + min_lvl);
 
+    const weapon = { type: wpn_type, subtype: wpn_subtype, skill: wpn_skill };
+    const target = { name: tar_nam, level: tar_lvl, defense: tar_lvl * 5 };
     return {
         ...scenario,
-        weapon: {
-            type: weapon_type,
-            subtype: weapon_subtype,
-            skill: weapon_skill,
-        },
-        target: {
-            name: target_name,
-            level: target_lvl,
-            defense: target_lvl * 5,
-        },
-        skill_delta: target_lvl * 5 - weapon_skill,
+        weapon,
+        target,
+        skill_delta: tar_lvl * 5 - wpn_skill,
     };
 }
 
