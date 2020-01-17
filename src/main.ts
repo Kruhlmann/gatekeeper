@@ -135,10 +135,8 @@ function validate_environment(variable_keys: string[]): boolean {
                     return;
                 }
 
-                const created = new Date(c.createdAt);
-                const expires = new Date(
-                    created.getTime() + 24 * 60 * 60 * 1000
-                );
+                const expires = new Date(c.createdAt);
+                expires.setDate(expires.getDate() + 1);
                 if (expires < new Date()) {
                     message.channel.send(
                         "Your captcha has expired, please request a new one."
