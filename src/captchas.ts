@@ -173,7 +173,7 @@ function generate_scenario_text(
         scenario.sex_prefix !== "" ? `${scenario.sex_prefix} ` : ""
     }${scenario.sex} ${scenario.race}** DPS fury warrior in **<${
         scenario.guild_name
-    }>**) is attacking a level **${scenario.target.level}** **${
+    }>**) are attacking a level **${scenario.target.level}** **${
         scenario.target.name
     }** from **${front ? "the front" : "behind"}** using your **${
         scenario.weapon.subtype
