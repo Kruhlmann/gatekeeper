@@ -156,7 +156,7 @@ function calc_mitigation(
             miss_chance = miss_chance * 0.8 + 20;
         }
         answer = Math.ceil(miss_chance + miss_penalty);
-        query = `your **${
+        query = `the hit from gear required to reach your **${
             yellow_hits ? "yellow" : "white"
         }** hit cap (rounded up to nearest 1/10th)?`;
         example = "13.1";
