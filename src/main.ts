@@ -5,14 +5,13 @@
  */
 
 import * as discord from "discord.js";
-import { handle_exception, log } from "./io";
-import { LoggingLevel } from "./typings/types";
-import * as config from "../config.json";
-import * as captcha_generator from "./captchas";
-import * as psql from "./db";
 import { Op } from "sequelize";
-import * as Sentry from "@sentry/node";
-import { Captcha } from "./typings/types";
+import * as config from "../config.json";
+import { make_captcha_message, send_captcha } from "./captcha_broker";
+import * as psql from "./db";
+import { handle_exception, log, init_sentry } from "./io";
+import { t_diff } from "./time";
+import { LoggingLevel } from "./typings/types";
 
 const req_env_vars = [
     "GATEKEEPER_DB_USR",
@@ -25,89 +24,13 @@ const req_env_vars = [
 process.on("uncaughtException", handle_exception);
 process.on("unhandledRejection", handle_exception);
 
-const captcha_preface = "__**Fight Club Gatekeeping**__\n\nWelcome to the Fight Club Classic Warrior discord.\n\nMost channels in this discord are for **serious** theorycrafting and as such we ask you to please answer the questions below, if you want write priviledges, to verify that you have at least some basic knowledge about the warrior class.\n\nYou can find the answer to your question if you throroughly read through the frequently asked questions channels."
-
 let db: psql.DB;
 
-/**
- * Returns 3 unique hit cap captchas.
- *
- * @return - Array length 3 with distinct git cap captchas,
- */
-function get_unique_captchas(): Captcha[] {
-    const captchas = [];
-    const generators = captcha_generator.generators;
-    for (let i = 0; i < 3; i++) {
-        const generator_index = Math.floor(Math.random() * generators.length);
-        const generator = generators[generator_index];
-        generators.splice(generator_index, 1);
-        const captcha = generator();
-        captchas.push(captcha);
-    }
-    return captchas;
-}
-
-/**
- * Contructs a rich embed discord message from a captcha.
- *
- * @param captcha - Captcha to generate message from.
- * @returns - Discord rich embed message.
- */
-function make_captcha_message(captcha: Captcha): discord.RichEmbed {
-    return new discord.RichEmbed()
-        .setTitle("Fight Club Captcha")
-        .setDescription(captcha.text)
-        .setThumbnail("https://img.rankedboost.com/wp-content/uploads/2019/05/WoW-Classic-Warrior-Guide-150x150.png");
-}
-
-/**
- * Sends a captcha to a user to allow them to optain write permissions.
- *
- * @param user - User to send captcha to.
- */
-function send_captcha(user: discord.GuildMember) {
-    get_unique_captchas();
-    const captcha = captcha_generator.generate();
-    const message = make_captcha_message(captcha);
-    psql.Captcha.create({
-        user_id: user.id,
-        answer: captcha.answer,
-    }).then((c: psql.Captcha) => {
-        user.send(captcha_preface + `Your ID: \`${c.id}\``, message)
-        log(`Sent captcha to user ${user.id} with answer ${captcha.answer}`);
-        psql.Captcha.findAll({
-            where: {
-                id: {
-                    [Op.ne]: c.id
-                }
-            }
-        }).then((captchas) => {
-            for (const c of captchas) {
-                c.update({ active: false })
-            }
-        });
-    });
-}
-
-/**
- * Adds the default read-only role to all members without it.
- *
- * @param guild - Guild to apply read role to.
- * @param read_role - Role to apply to members.
- */
-function role_routine(guild: discord.Guild, read_role: discord.Role): void {
-    guild.members.forEach((user) => {
-        const has_read_role = !!user.roles.find((role) => {
-            return role.id === read_role.id;
-        });
-
-        if (!has_read_role) {
-            user.addRole(read_role);
-            const usr_str = `<${user.user.username}:${user.id}>`;
-            const role_str = `<${read_role.name}:${read_role.id}>`;
-            log(`Added read role ${role_str} to user ${usr_str}`);
-        }
-    });
+function make_github_issue_suffix(captcha: psql.Captcha): string {
+    return (
+        `\n\n*Experiencing problems with my programming? [Open an issue](https://github.com/Kruhlmann/gatekeeper/issues/new?assignees=Kruhlmann&labels=bug&template=captcha-issue.md&title=%5BCAPTCHA%5D)*` +
+        `\nYour ID: \`${captcha.quiz_id}\\${captcha.id}\``
+    );
 }
 
 /**
@@ -120,10 +43,13 @@ function validate_environment(variable_keys: string[]): boolean {
     let valid = true;
     for (const env_var of variable_keys) {
         if (!process.env.hasOwnProperty(env_var)) {
-            log(`Missing environment variable: ${env_var}`, LoggingLevel.ERR)
+            log(`Missing environment variable: ${env_var}`, LoggingLevel.ERR);
             valid = false;
         } else {
-            log(`Found required environment variable ${env_var}`, LoggingLevel.DEV)
+            log(
+                `Found required environment variable ${env_var}`,
+                LoggingLevel.DEV
+            );
         }
     }
 
@@ -133,33 +59,24 @@ function validate_environment(variable_keys: string[]): boolean {
 // Main fucntion.
 (async () => {
     // Check for all environment variables.
-    if(!validate_environment(req_env_vars)) {
+    if (!validate_environment(req_env_vars)) {
         process.exit(1);
     }
 
-    if (process.env.hasOwnProperty("GATEKEEPER_SENTRY_DSN")) {
-        Sentry.init({ dsn: process.env.GATEKEEPER_SENTRY_DSN });
-    } else {
-        log("No sentry DSN provided. Sentry logging is disabled.", LoggingLevel.WAR)
-    }
+    // Sentry logging
+    init_sentry();
 
     // Init discord virtual client.
     const discord_client = new discord.Client();
     const dicord_token = process.env.GATEKEEPER_DISCORD_TOKEN;
 
     // Init database.
-    db = psql.connect()
+    db = psql.connect();
 
     log("Awaiting response from discord", LoggingLevel.DEV);
 
     discord_client.on("ready", () => {
         log(`Started gatekeeper in ${config.deployment_mode} mode`);
-
-        const guild = discord_client.guilds.get(config.guild_id);
-        const read_role = guild.roles.get(config.role_ids.read);
-
-        role_routine(guild, read_role);
-        setInterval(() => role_routine(guild, read_role), 5000);
     });
 
     discord_client.on("message", (message: discord.Message) => {
@@ -168,42 +85,11 @@ function validate_environment(variable_keys: string[]): boolean {
             return;
         }
 
-
         const guild = discord_client.guilds.get(config.guild_id);
         const user = guild.members.get(message.author.id);
-
-        if (message.channel.type !== "dm") {
-            if (message.content === "!captcha") {
-                // TODO: Don't send message to people who already have write roles.
-                if (config.deployment_mode === "production") {
-                    psql.Captcha.findOne({
-                        order: ["createdAt"],
-                        where: {
-                            [Op.and]: [{ user_id: user.id }, { active: true }],
-                        },
-                    }).then((captcha) => {
-                        if (captcha) {
-                            const created = new Date(captcha.createdAt);
-                            const expires = new Date(created.getTime() + 24 * 60 * 60 * 1000)
-                            if (expires >= new Date()) {
-                                message.reply("You already have a pending captcha. You can request a new one 24 hours after the active CAPTCHA was requested.");
-                                return;
-                            }
-                        }
-                        send_captcha(user)
-                    });
-                } else {
-                    // In non-production mode ignore the cooldown of captchas.
-                    send_captcha(user);
-                }
-            }
-            return;
-        }
-
-
-        const write_role = guild.roles.get(config.role_ids.write);
+        const write_role = guild.roles.get(config.role);
         const has_write_role = !!user.roles.find((role) => {
-            return role.id === config.role_ids.write;
+            return role.id === config.role;
         });
 
         // Ignore messages from those already with the write role
@@ -211,37 +97,141 @@ function validate_environment(variable_keys: string[]): boolean {
             return;
         }
 
-        psql.Captcha.findOne({
-            where: {
-                [Op.and]: [{ user_id: message.author.id }, { active: true }]
+        // Handle '!captcha' messages in public text channels
+        if (message.channel.type !== "dm") {
+            if (message.content !== "!captcha") {
+                return;
             }
-        }).then((c: psql.Captcha) => {
-            if (c.answer === message.content) {
-                c.update({ completed: true, active: false });
 
-                psql.Captcha.findAll({
-                    where: { completed: true }
-                }).then((completed: psql.Captcha[]) => {
-                    if (completed.length > 2) {
-                        user.addRole(write_role);
-                        const usr_str = `<${user.user.username}:${user.id}>`;
-                        const role_str = `<${write_role.name}:${write_role.id}>`;
-                        log(`Added write role ${role_str} to user ${usr_str}`);
-                        message.channel.send(`\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`);
-                    } else {
-                        message.channel.send(`\`${message.content}\` is correct. You've completed ${completed.length + 1}/3 captchas.`);
+            if (config.deployment_mode === "production") {
+                psql.find_one(psql.Quiz, user.user).then((quiz: psql.Quiz) => {
+                    if (quiz) {
+                        const expires = new Date(quiz.createdAt);
+                        expires.setDate(expires.getDate() + 1);
+                        if (expires >= new Date()) {
+                            return message.reply(
+                                `You already have a pending captcha. You can request a new one ${t_diff(
+                                    expires,
+                                    new Date()
+                                )}.`
+                            );
+                        }
                     }
+                    send_captcha(user, message.channel);
                 });
             } else {
-                message.channel.send(`\`${message.content}\` is not correct.`)
+                send_captcha(user, message.channel);
             }
-        }).catch((error) => {
-            log(error.stack, LoggingLevel.ERR);
-            message.channel.send("An error occurred while looking for your captcha.");
-        });
+            return;
+        }
+
+        // Handle captcha answers in DMs
+        psql.find_one(psql.Captcha, message.author)
+            .then((c: psql.Captcha) => {
+                if (!c) {
+                    message.channel.send(
+                        "An active captcha was not found for you."
+                    );
+                    return;
+                }
+
+                const created = new Date(c.createdAt);
+                const expires = new Date(
+                    created.getTime() + 24 * 60 * 60 * 1000
+                );
+                if (expires < new Date()) {
+                    message.channel.send(
+                        "Your captcha has expired, please request a new one."
+                    );
+                    return;
+                }
+
+                const parsed_content = parseFloat(message.content);
+                if (c.answer === parsed_content.toFixed(1)) {
+                    c.update({ completed: true, active: false });
+
+                    psql.find_one(psql.Quiz, message.author).then(
+                        (q: psql.Quiz) => {
+                            const completed = q.completed + 1;
+                            q.update({ completed: completed });
+
+                            if (completed >= 3) {
+                                user.addRole(write_role);
+                                const usr_str = `<${user.user.username}:${user.id}>`;
+                                const role_str = `<${write_role.name}:${write_role.id}>`;
+                                log(
+                                    `Added write role ${role_str} to user ${usr_str}`
+                                );
+                                message.channel.send(
+                                    `\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`
+                                );
+                                return;
+                            } else {
+                                message.channel.send(
+                                    `\`${message.content}\` is correct. You've completed ${completed}/3 captchas.`
+                                );
+                            }
+
+                            psql.Captcha.findOne({
+                                where: {
+                                    [Op.and]: [
+                                        {
+                                            quiz_id: q.id,
+                                            completed: false,
+                                            active: false,
+                                        },
+                                    ],
+                                },
+                            }).then((c: psql.Captcha) => {
+                                c.update({ active: true }).then(
+                                    (c: psql.Captcha) => {
+                                        user.send(
+                                            "",
+                                            make_captcha_message(
+                                                c,
+                                                make_github_issue_suffix(c)
+                                            )
+                                        );
+                                        log(
+                                            `Sent captcha to user ${user.id} with answer ${c.answer}`
+                                        );
+                                    }
+                                );
+                            });
+                        }
+                    );
+                } else {
+                    psql.find_one(psql.Quiz, message.author).then(
+                        (q: psql.Quiz) => {
+                            const wrong = q.wrong + 1;
+                            q.update({ wrong: wrong });
+
+                            if (wrong >= 5) {
+                                psql.Captcha.update(
+                                    { active: false },
+                                    { where: { user_id: user.id } }
+                                ).then(() => {
+                                    message.channel.send(
+                                        `\`${message.content}\` is not correct. You've failed and may try again in 24 hours.`
+                                    );
+                                });
+                            } else {
+                                message.channel.send(
+                                    `\`${message.content}\` is not correct. You've used ${wrong}/5 incorrect answers.`
+                                );
+                            }
+                        }
+                    );
+                }
+            })
+            .catch((error) => {
+                log(error.stack, LoggingLevel.ERR);
+                message.channel.send(
+                    "An error occurred while looking for your captcha."
+                );
+            });
     });
 
     // Authenticate.
     discord_client.login(dicord_token).catch(handle_exception);
 })();
-

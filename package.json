@@ -1,42 +1,46 @@
 {
-  "name": "gatekeeper",
-  "version": "1.0.0",
-  "description": "Gatekeeping bot for discord",
-  "scripts": {
-    "start": "npm run build && node dist/src/main.js",
-    "build": "tsc",
-    "watch": "tsc -w",
-    "test": "mocha -r ts-node/register tests/*.spec.ts",
-    "migrate": "node-pg-migrate",
-    "upgrade": "DATABASE_URL=postgres://$GATEKEEPER_DB_USR:$GATEKEEPER_DB_PWD@localhost:5432/$GATEKEEPER_DB_NAM npm run migrate up",
-    "downgrade": "DATABASE_URL=postgres://$GATEKEEPER_DB_USR:$GATEKEEPER_DB_PWD@localhost:5432/$GATEKEEPER_DB_NAM npm run migrate down"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Kruhlmann/gatekeeper.git"
-  },
-  "author": "Kruhlmann",
-  "license": "GPL-3.0-or-later",
-  "bugs": {
-    "url": "https://github.com/Kruhlmann/gatekeeper/issues"
-  },
-  "homepage": "https://github.com/Kruhlmann/gatekeeper#readme",
-  "dependencies": {
-    "@sentry/node": "^5.10.2",
-    "@types/node": "^12.11.7",
-    "@types/sequelize": "^4.28.8",
-    "discord.js": "^11.5.1",
-    "node-pg-migrate": "^3.23.3",
-    "pg": "^7.14.0",
-    "sequelize": "^5.21.2",
-    "typescript": "^3.6.4",
-    "uws": "^100.0.1"
-  },
-  "devDependencies": {
-    "@types/chai": "^4.2.7",
-    "@types/mocha": "^5.2.7",
-    "chai": "^4.2.0",
-    "mocha": "^6.2.2",
-    "ts-node": "^8.5.4"
-  }
+    "name": "gatekeeper",
+    "version": "1.0.0",
+    "description": "Gatekeeping bot for discord",
+    "scripts": {
+        "start": "npm run build && node dist/src/main.js",
+        "build": "tsc",
+        "watch": "tsc -w",
+        "test": "mocha -r ts-node/register tests/*.spec.ts",
+        "coverage": "nyc npm run test",
+        "migrate": "node-pg-migrate",
+        "upgrade": "DATABASE_URL=postgres://$GATEKEEPER_DB_USR:$GATEKEEPER_DB_PWD@localhost:5432/$GATEKEEPER_DB_NAM npm run migrate up",
+        "downgrade": "DATABASE_URL=postgres://$GATEKEEPER_DB_USR:$GATEKEEPER_DB_PWD@localhost:5432/$GATEKEEPER_DB_NAM npm run migrate down"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Kruhlmann/gatekeeper.git"
+    },
+    "author": "Kruhlmann",
+    "license": "GPL-3.0-or-later",
+    "bugs": {
+        "url": "https://github.com/Kruhlmann/gatekeeper/issues"
+    },
+    "homepage": "https://github.com/Kruhlmann/gatekeeper#readme",
+    "dependencies": {
+        "@sentry/node": "^5.10.2",
+        "@types/node": "^12.11.7",
+        "@types/sequelize": "^4.28.8",
+        "discord.js": "^11.5.1",
+        "node-pg-migrate": "^3.23.3",
+        "pg": "^7.16.1",
+        "sequelize": "^5.21.2",
+        "typescript": "^3.6.4",
+        "uws": "^100.0.1"
+    },
+    "devDependencies": {
+        "@istanbuljs/nyc-config-typescript": "^1.0.1",
+        "@types/chai": "^4.2.7",
+        "@types/mocha": "^5.2.7",
+        "chai": "^4.2.0",
+        "mocha": "^6.2.2",
+        "nyc": "^15.0.0",
+        "source-map-support": "^0.5.16",
+        "ts-node": "^8.6.2"
+    }
 }

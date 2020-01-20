@@ -32,7 +32,5 @@ export interface CombatScenario {
 
 export interface Captcha {
     answer: string;
-    seed: string;
     text: string;
 }
-
