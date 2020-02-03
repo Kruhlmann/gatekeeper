@@ -88,7 +88,7 @@ function validate_environment(variable_keys: string[]): boolean {
         const guild = discord_client.guilds.get(config.guild_id);
         const user = guild.members.get(message.author.id);
         const write_role = guild.roles.get(config.role);
-        if (!user.hasOwnProperty("roles")) {
+        if (!user) {
             return;
         }
         const has_write_role = !!user.roles.find((role) => {
