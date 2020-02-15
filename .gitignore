@@ -1,4 +1,5 @@
 # Logs
+ logfile
 logs
 !logs/.gitkeep
 *.log

@@ -147,8 +147,10 @@ function validate_environment(variable_keys: string[]): boolean {
                     return;
                 }
 
-                const parsed_content = parseFloat(message.content);
-                if (c.answer === parsed_content.toFixed(1)) {
+                const parsed_content = parseFloat(
+                    message.content.replace(/,/, ".")
+                ).toFixed(1);
+                if (c.answer === parsed_content) {
                     c.update({ completed: true, active: false });
 
                     psql.find_one(psql.Quiz, message.author).then(
@@ -164,12 +166,12 @@ function validate_environment(variable_keys: string[]): boolean {
                                     `Added write role ${role_str} to user ${usr_str}`
                                 );
                                 message.channel.send(
-                                    `\`${message.content}\` is correct. You've been given write permissions to the relevant channels.`
+                                    `\`${parsed_content}\` is correct. You've been given write permissions to the relevant channels.`
                                 );
                                 return;
                             } else {
                                 message.channel.send(
-                                    `\`${message.content}\` is correct. You've completed ${completed}/3 captchas.`
+                                    `\`${parsed_content}\` is correct. You've completed ${completed}/3 captchas.`
                                 );
                             }
 
@@ -213,12 +215,12 @@ function validate_environment(variable_keys: string[]): boolean {
                                     { where: { user_id: user.id } }
                                 ).then(() => {
                                     message.channel.send(
-                                        `\`${message.content}\` is not correct. You've failed and may try again in 24 hours.`
+                                        `\`${parsed_content}\` is not correct. You've failed and may try again in 24 hours.`
                                     );
                                 });
                             } else {
                                 message.channel.send(
-                                    `\`${message.content}\` is not correct. You've used ${wrong}/5 incorrect answers.`
+                                    `\`${parsed_content}\` is not correct. You've used ${wrong}/5 incorrect answers.`
                                 );
                             }
                         }
