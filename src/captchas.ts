@@ -169,7 +169,7 @@ function generate_scenario_text(
     scenario: CombatScenario,
     front: boolean
 ): string {
-    return `You (a **${
+    return `You (a level 60 **${
         scenario.sex_prefix !== "" ? `${scenario.sex_prefix} ` : ""
     }${scenario.sex} ${scenario.race}** DPS fury warrior in **<${
         scenario.guild_name
@@ -179,7 +179,7 @@ function generate_scenario_text(
         scenario.weapon.subtype
     } ${scenario.weapon.type}${
         scenario.weapon.subtype == "dual wielded" ? "s" : ""
-    }**`;
+    }**. You have max weapon skills and no other source of +weapon skill.`;
 }
 
 /**
