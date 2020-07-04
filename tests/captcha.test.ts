@@ -1,6 +1,4 @@
-import { expect } from "chai";
 import { hit_cap_generator } from "../src/captchas";
-import "mocha";
 
 const scenario_template = {
     sex: "female",
@@ -35,19 +33,19 @@ const noorc_scenario_template = {
     ...scenario_template,
     race: "troll",
     skill_delta: 15,
-}
+};
 
 const noorc_th = {
     type: "axe",
     subtype: "2 handed",
     skill: 300,
-}
+};
 
 const noorc_dw = {
     type: "axe",
     subtype: "dual wielded",
     skill: 300,
-}
+};
 
 const scenarios = {
     hit: {
@@ -58,7 +56,7 @@ const scenarios = {
         noorc: {
             th: { ...noorc_scenario_template, weapon: noorc_th },
             dw: { ...noorc_scenario_template, weapon: noorc_dw },
-        }
+        },
     },
 };
 
@@ -70,16 +68,26 @@ describe("CAPTCHAs", () => {
                     describe("Two-handed", () => {
                         it("should have the answer 6.0", () => {
                             const scenario = scenarios.hit.orc.th;
-                            const answer = hit_cap_generator(scenario, "none", false, true).answer;
-                            expect(answer).to.equal("6.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                false,
+                                true
+                            ).answer;
+                            expect(answer).toBe("6.0");
                         });
                     });
 
                     describe("Dual wielding", () => {
                         it("should have the answer 25.0", () => {
                             const scenario = scenarios.hit.orc.dw;
-                            const answer = hit_cap_generator(scenario, "none", false, true).answer;
-                            expect(answer).to.equal("25.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                false,
+                                true
+                            ).answer;
+                            expect(answer).toBe("25.0");
                         });
                     });
                 });
@@ -88,16 +96,26 @@ describe("CAPTCHAs", () => {
                     describe("Two-handed", () => {
                         it("should have the answer 6.0", () => {
                             const scenario = scenarios.hit.orc.th;
-                            const answer = hit_cap_generator(scenario, "none", true, true).answer;
-                            expect(answer).to.equal("6.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                true,
+                                true
+                            ).answer;
+                            expect(answer).toBe("6.0");
                         });
                     });
 
                     describe("Dual wielding", () => {
                         it("should have the answer 6.0", () => {
                             const scenario = scenarios.hit.orc.dw;
-                            const answer = hit_cap_generator(scenario, "none", true, true).answer;
-                            expect(answer).to.equal("6.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                true,
+                                true
+                            ).answer;
+                            expect(answer).toBe("6.0");
                         });
                     });
                 });
@@ -108,16 +126,26 @@ describe("CAPTCHAs", () => {
                     describe("Two-handed", () => {
                         it("should have the answer 6.0", () => {
                             const scenario = scenarios.hit.orc.th;
-                            const answer = hit_cap_generator(scenario, "none", false, false).answer;
-                            expect(answer).to.equal("6.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                false,
+                                false
+                            ).answer;
+                            expect(answer).toBe("6.0");
                         });
                     });
 
                     describe("Dual wielding", () => {
                         it("should have the answer 25.0", () => {
                             const scenario = scenarios.hit.orc.dw;
-                            const answer = hit_cap_generator(scenario, "none", false, false).answer;
-                            expect(answer).to.equal("25.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                false,
+                                false
+                            ).answer;
+                            expect(answer).toBe("25.0");
                         });
                     });
                 });
@@ -126,16 +154,26 @@ describe("CAPTCHAs", () => {
                     describe("Two-handed", () => {
                         it("should have the answer 6.0", () => {
                             const scenario = scenarios.hit.orc.th;
-                            const answer = hit_cap_generator(scenario, "none", true, false).answer;
-                            expect(answer).to.equal("6.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                true,
+                                false
+                            ).answer;
+                            expect(answer).toBe("6.0");
                         });
                     });
 
                     describe("Dual wielding", () => {
                         it("should have the answer 6.0", () => {
                             const scenario = scenarios.hit.orc.dw;
-                            const answer = hit_cap_generator(scenario, "none", true, false).answer;
-                            expect(answer).to.equal("6.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                true,
+                                false
+                            ).answer;
+                            expect(answer).toBe("6.0");
                         });
                     });
                 });
@@ -148,16 +186,26 @@ describe("CAPTCHAs", () => {
                     describe("Two-handed", () => {
                         it("should have the answer 9.0", () => {
                             const scenario = scenarios.hit.noorc.th;
-                            const answer = hit_cap_generator(scenario, "none", true, true).answer;
-                            expect(answer).to.equal("9.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                true,
+                                true
+                            ).answer;
+                            expect(answer).toBe("9.0");
                         });
                     });
 
                     describe("Dual wielding", () => {
                         it("should have the answer 9.0", () => {
                             const scenario = scenarios.hit.noorc.dw;
-                            const answer = hit_cap_generator(scenario, "none", true, true).answer;
-                            expect(answer).to.equal("9.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                true,
+                                true
+                            ).answer;
+                            expect(answer).toBe("9.0");
                         });
                     });
                 });
@@ -166,16 +214,26 @@ describe("CAPTCHAs", () => {
                     describe("Two-handed", () => {
                         it("should have the answer 9.0", () => {
                             const scenario = scenarios.hit.noorc.th;
-                            const answer = hit_cap_generator(scenario, "none", false, true).answer;
-                            expect(answer).to.equal("9.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                false,
+                                true
+                            ).answer;
+                            expect(answer).toBe("9.0");
                         });
                     });
 
                     describe("Dual wielding", () => {
                         it("should have the answer 28.0", () => {
                             const scenario = scenarios.hit.noorc.dw;
-                            const answer = hit_cap_generator(scenario, "none", false, true).answer;
-                            expect(answer).to.equal("28.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                false,
+                                true
+                            ).answer;
+                            expect(answer).toBe("28.0");
                         });
                     });
                 });
@@ -186,16 +244,26 @@ describe("CAPTCHAs", () => {
                     describe("Two-handed", () => {
                         it("should have the answer 9.0", () => {
                             const scenario = scenarios.hit.noorc.th;
-                            const answer = hit_cap_generator(scenario, "none", true, false).answer;
-                            expect(answer).to.equal("9.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                true,
+                                false
+                            ).answer;
+                            expect(answer).toBe("9.0");
                         });
                     });
 
                     describe("Dual wielding", () => {
                         it("should have the answer 9.0", () => {
                             const scenario = scenarios.hit.noorc.dw;
-                            const answer = hit_cap_generator(scenario, "none", true, false).answer;
-                            expect(answer).to.equal("9.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                true,
+                                false
+                            ).answer;
+                            expect(answer).toBe("9.0");
                         });
                     });
                 });
@@ -204,16 +272,26 @@ describe("CAPTCHAs", () => {
                     describe("Two-handed", () => {
                         it("should have the answer 9.0", () => {
                             const scenario = scenarios.hit.noorc.th;
-                            const answer = hit_cap_generator(scenario, "none", false, false).answer;
-                            expect(answer).to.equal("9.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                false,
+                                false
+                            ).answer;
+                            expect(answer).toBe("9.0");
                         });
                     });
 
                     describe("Dual wielding", () => {
                         it("should have the answer 28.0", () => {
                             const scenario = scenarios.hit.noorc.dw;
-                            const answer = hit_cap_generator(scenario, "none", false, false).answer;
-                            expect(answer).to.equal("28.0");
+                            const answer = hit_cap_generator(
+                                scenario,
+                                "none",
+                                false,
+                                false
+                            ).answer;
+                            expect(answer).toBe("28.0");
                         });
                     });
                 });
@@ -224,13 +302,13 @@ describe("CAPTCHAs", () => {
     describe("Parry", () => {
         describe("Orc", () => {
             it("should have the answer X", () => {
-                expect(1).to.equal(1);
+                expect(1).toBe(1);
                 // 13.5 need to verify with magey if weapon skill applies to parry
             });
         });
         describe("Non-orc", () => {
             it("should have the answer X", () => {
-                expect(1).to.equal(1);
+                expect(1).toBe(1);
                 // 14
             });
         });
@@ -240,15 +318,25 @@ describe("CAPTCHAs", () => {
         describe("Orc", () => {
             it("should have the answer 6.0", () => {
                 const scenario = scenarios.hit.orc.th;
-                const answer = hit_cap_generator(scenario, "dodge", false, false).answer;
-                expect(answer).to.equal("6.0");
+                const answer = hit_cap_generator(
+                    scenario,
+                    "dodge",
+                    false,
+                    false
+                ).answer;
+                expect(answer).toBe("6.0");
             });
         });
         describe("Non-orc", () => {
             it("should have the answer 6.5", () => {
                 const scenario = scenarios.hit.noorc.th;
-                const answer = hit_cap_generator(scenario, "dodge", false, false).answer;
-                expect(answer).to.equal("6.5");
+                const answer = hit_cap_generator(
+                    scenario,
+                    "dodge",
+                    false,
+                    false
+                ).answer;
+                expect(answer).toBe("6.5");
             });
         });
     });
@@ -257,15 +345,25 @@ describe("CAPTCHAs", () => {
         describe("Orc", () => {
             it("should have the answer 5.0", () => {
                 const scenario = scenarios.hit.orc.th;
-                const answer = hit_cap_generator(scenario, "block", false, false).answer;
-                expect(answer).to.equal("5.0");
+                const answer = hit_cap_generator(
+                    scenario,
+                    "block",
+                    false,
+                    false
+                ).answer;
+                expect(answer).toBe("5.0");
             });
         });
         describe("Non-orc", () => {
             it("should have the answer 5.0", () => {
                 const scenario = scenarios.hit.noorc.th;
-                const answer = hit_cap_generator(scenario, "block", false, false).answer;
-                expect(answer).to.equal("5.0");
+                const answer = hit_cap_generator(
+                    scenario,
+                    "block",
+                    false,
+                    false
+                ).answer;
+                expect(answer).toBe("5.0");
             });
         });
     });
@@ -274,17 +372,26 @@ describe("CAPTCHAs", () => {
         describe("Orc", () => {
             it("should have the answer 40.0", () => {
                 const scenario = scenarios.hit.orc.th;
-                const answer = hit_cap_generator(scenario, "glancing", false, false).answer;
-                expect(answer).to.equal("40.0");
+                const answer = hit_cap_generator(
+                    scenario,
+                    "glancing",
+                    false,
+                    false
+                ).answer;
+                expect(answer).toBe("40.0");
             });
         });
         describe("Non-orc", () => {
             it("should have the answer 40.0", () => {
                 const scenario = scenarios.hit.noorc.th;
-                const answer = hit_cap_generator(scenario, "glancing", false, false).answer;
-                expect(answer).to.equal("40.0");
+                const answer = hit_cap_generator(
+                    scenario,
+                    "glancing",
+                    false,
+                    false
+                ).answer;
+                expect(answer).toBe("40.0");
             });
         });
     });
 });
-
