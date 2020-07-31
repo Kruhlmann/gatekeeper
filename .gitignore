@@ -1,3 +1,9 @@
+# Docker artifacts
+postgres/
+
+# Environment secrets.
+env
+
 # Logs
  logfile
 logs
@@ -8,6 +14,7 @@ yarn-debug.log*
 yarn-error.log*
 
 .environment
+environment
 .test-environment
 config.json
 dist

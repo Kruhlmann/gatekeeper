@@ -29,7 +29,7 @@ If you want to run your own instance of the bot the following packages are requi
 * make
 * automake
 * nodejs >=10.16.0
-* npm
+* yarn
 * postgres >=11.5
 * node-pg-migrate
 * pg
@@ -46,11 +46,11 @@ postgres=# \q
 ```bash
 git clone https://github.com/Kruhlmann/gatekeeper
 cd gatekeeper
-npm install
-npm run upgrade
+yarn install
+yarn run upgrade
 ```
 
-You must rename [config.json.example](config.json.example) to `config.json` and fill it in with the required details. 
+You must rename [config.json.example](config.json.example) to `config.json` and fill it in with the required details.
 
 #### Environment variables
 
