@@ -84,70 +84,112 @@ export async function create_captcha(
     });
 }
 
+async function update_quiz(user: discord.GuildMember): Promise<psql.Quiz> {
+    console.log(1);
+    return psql.Quiz.update({ active: false }, { where: { user_id: user.id } })
+        .then(async () => {
+            console.log(2);
+            await psql.Captcha.update(
+                { active: false },
+                { where: { user_id: user.id } }
+            );
+            return psql.Quiz.create({
+                user_id: user.id,
+                active: true,
+            });
+        })
+        .catch((e) => {
+            console.error(e);
+            return null;
+        });
+}
+
+/**
+ * Finalizes, then sends a captcha.
+ *
+ * @param user - User to send captcha to.
+ * @param preface - Text preface for the discord embed message.
+ * @param captcha - Captcha to generate an embed message for.
+ */
+async function send_captcha(
+    user: discord.GuildMember,
+    preface: string,
+    captcha: psql.Captcha
+): Promise<void> {
+    const suffix = make_github_issue_suffix(captcha);
+    const captcha_embed = make_captcha_message(captcha, suffix);
+    await user.send(preface, captcha_embed);
+    log(`Sent captcha to user ${user.id} with answer ${captcha.answer}`);
+}
+
+/**
+ * Simplifies the code for making captchas depending on whether it is the first
+ * to be created as this has special behavior.
+ *
+ * @param quiz - The quiz for the captcha.
+ * @param user - The user who the quiz belongs to.
+ * @param captcha - Captcha data object.
+ * @param is_first - Whether this captcha will be the first to be generated for
+ * this quiz. If it is it will be sent out to the user immediately.
+ */
+function make_captcha_wrapper(
+    quiz: psql.Quiz,
+    user: discord.GuildMember,
+    captcha: Captcha,
+    is_first: boolean
+): void {
+    const captcha_promise = create_captcha(
+        quiz.id,
+        user.id,
+        captcha.text,
+        captcha.answer,
+        is_first
+    );
+    if (is_first) {
+        captcha_promise.then((database_captcha: psql.Captcha) => {
+            send_captcha(user, captcha_preface, database_captcha);
+        });
+    }
+}
+
 /**
  * Sends a captcha to a user to allow them to optain write permissions.
  *
  * @param user - User to send captcha to.
+ * @param channel - Channel to send error output to should one occur.
  */
-export function send_captcha(
+export async function generate_and_send_captcha(
     user: discord.GuildMember,
     channel: discord.Channel
-) {
+): Promise<void> {
     try {
-        psql.Quiz.update(
-            { active: false },
-            { where: { user_id: user.id } }
-        ).then(() => {
-            psql.Captcha.update(
-                { active: false },
-                { where: { user_id: user.id } }
-            ).then(() => {
-                psql.Quiz.create({
-                    user_id: user.id,
-                    active: true,
-                }).then((q: psql.Quiz) => {
-                    let first = true;
-                    for (let captcha of get_unique_captchas()) {
-                        if (first) {
-                            create_captcha(
-                                q.id,
-                                user.id,
-                                captcha.text,
-                                captcha.answer,
-                                true
-                            ).then((c: psql.Captcha) => {
-                                user.send(
-                                    captcha_preface,
-                                    make_captcha_message(
-                                        c,
-                                        make_github_issue_suffix(c)
-                                    )
-                                );
-                                log(
-                                    `Sent captcha to user ${user.id} with answer ${captcha.answer}`
-                                );
-                            });
-                        } else {
-                            create_captcha(
-                                q.id,
-                                user.id,
-                                captcha.text,
-                                captcha.answer,
-                                false
-                            );
-                        }
-                        first = false;
-                    }
-                });
-            });
-        });
-    } catch (e) {
-        log(
-            `Error when sending captcha to user ${user.user.username}:${user.id}: ${e}`,
-            LoggingLevel.ERR
-        );
-        (channel as discord.TextChannel).send(
-            `Sorry <@${user.id}>, I can't send you a message.`
-        );
+        const quiz = await update_quiz(user);
+        let first = true;
+        for (let captcha of get_unique_captchas()) {
+            make_captcha_wrapper(quiz, user, captcha, first);
+            first = false;
+        }
+    } catch (error) {
+        on_send_captcha_error(error, channel as discord.TextChannel, user);
     }
+}
+
+/**
+ * Error handling for functions sending captchas. Logs the erorr and notifies
+ * the user who was to recieve the message.
+ *
+ * @param error - Error caught.
+ * @param channel - Channel where the sending of a captcha threw an error.
+ * @param user - The user which was to recieve the message.
+ */
+function on_send_captcha_error(
+    error: Error,
+    channel: discord.TextChannel,
+    user: discord.GuildMember
+): void {
+    log(
+        `Error when sending captcha to user ${user.user.username}:${user.id}: ${error}`,
+        LoggingLevel.ERR
+    );
+    channel.send(`Sorry <@${user.id}>, I can't send you a message.`);
 }
