@@ -1,6 +1,6 @@
 # Gatekeeper discord bot
 
-[![Discord Server](https://img.shields.io/discord/572880907682447380%20.svg?logo=discord&style=for-the-badge)](https://discord.gg/38wH62F)
+[![Discord Server](https://img.shields.io/discord/572880907682447380%20.svg?logo=discord&style=for-the-badge)](https://discord.gg/https://discord.gg/Y5eA3dW)
 [![Build Status](https://img.shields.io/github/workflow/status/kruhlmann/gatekeeper/node?style=for-the-badge)](https://github.com/Kruhlmann/gatekeeper/actions)
 [![Maintainability](https://img.shields.io/codeclimate/maintainability/Kruhlmann/gatekeeper.svg?style=for-the-badge)](https://codeclimate.com/github/Kruhlmann/gatekeeper/maintainability)
 
@@ -29,7 +29,7 @@ If you want to run your own instance of the bot the following packages are requi
 * make
 * automake
 * nodejs >=10.16.0
-* npm
+* yarn
 * postgres >=11.5
 * node-pg-migrate
 * pg
@@ -46,11 +46,11 @@ postgres=# \q
 ```bash
 git clone https://github.com/Kruhlmann/gatekeeper
 cd gatekeeper
-npm install
-npm run upgrade
+yarn install
+yarn run upgrade
 ```
 
-You must rename [config.json.example](config.json.example) to `config.json` and fill it in with the required details. 
+You must rename [config.json.example](config.json.example) to `config.json` and fill it in with the required details.
 
 #### Environment variables
 

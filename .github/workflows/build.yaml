@@ -1,0 +1,33 @@
+name: Docker build & publish
+
+on:
+    push:
+        branches:
+            - "master"
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@master
+              with:
+                lfs: true
+            - name: Publish to registry
+              uses: azure/docker-login@v1
+              with:
+                  username: ${{ secrets.DOCKER_USER }}
+                  password: ${{ secrets.DOCKER_PASS }}
+            - name: Publish to registry
+              run: |
+                  echo "$GATEKEEPER_CONFIG" > ./config.json
+                  docker build --cache-from $ONBUILD -t $ONBUILD -f docker/Dockerfile .
+                  docker push $IMAGE
+              with:
+                  GATEKEEPER_CONFIG: ${{ secrets.GATEKEEPER_CONFIG }}
+                  GATEKEEPER_DB_NAM: ${{ secrets.GATEKEEPER_DB_NAM }}
+                  GATEKEEPER_DB_USR: ${{ secrets.GATEKEEPER_DB_USR }}
+                  GATEKEEPER_DB_PWD: ${{ secrets.GATEKEEPER_DB_PWD }}
+                  GATEKEEPER_DISCORD_TOKEN: ${{ secrets.GATEKEEPER_DISCORD_TOKEN }}
+              env:
+                  ONBUILD: kruhlmann/gatekeeper:onbuild
+                  IMAGE: kruhlmann/gatekeeper

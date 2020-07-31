@@ -7,7 +7,10 @@
 import * as discord from "discord.js";
 import { Op } from "sequelize";
 import * as config from "../config.json";
-import { make_captcha_message, send_captcha } from "./captcha_broker";
+import {
+    make_captcha_message,
+    generate_and_send_captcha,
+} from "./captcha_broker";
 import * as psql from "./db";
 import { handle_exception, log, init_sentry } from "./io";
 import { t_diff } from "./time";
@@ -47,7 +50,7 @@ function validate_environment(variable_keys: string[]): boolean {
             valid = false;
         } else {
             log(
-                `Found required environment variable ${env_var}`,
+                `Found required environment variable ${env_var} (${process.env[env_var]})`,
                 LoggingLevel.DEV
             );
         }
@@ -120,10 +123,10 @@ function validate_environment(variable_keys: string[]): boolean {
                             );
                         }
                     }
-                    send_captcha(user, message.channel);
+                    generate_and_send_captcha(user, message.channel);
                 });
             } else {
-                send_captcha(user, message.channel);
+                generate_and_send_captcha(user, message.channel);
             }
             return;
         }
