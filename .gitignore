@@ -19,9 +19,6 @@ environment
 config.json
 dist
 
-res/adjectives.json
-res/nouns.json
-
 # Runtime data
 pids
 *.pid
