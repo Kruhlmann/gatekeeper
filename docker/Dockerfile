@@ -4,5 +4,6 @@ WORKDIR /usr/app
 COPY yarn.lock package.json ./
 RUN yarn install --quiet
 COPY . .
+RUN yarn run upgrade
 RUN yarn run tsc
 RUN yarn run build
