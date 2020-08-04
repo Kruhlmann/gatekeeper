@@ -22,12 +22,11 @@ jobs:
                   echo "$GATEKEEPER_CONFIG" > ./config.json
                   docker build --cache-from $ONBUILD -t $ONBUILD -f docker/Dockerfile .
                   docker push $IMAGE
-              with:
+              env:
                   GATEKEEPER_CONFIG: ${{ secrets.GATEKEEPER_CONFIG }}
                   GATEKEEPER_DB_NAM: ${{ secrets.GATEKEEPER_DB_NAM }}
                   GATEKEEPER_DB_USR: ${{ secrets.GATEKEEPER_DB_USR }}
                   GATEKEEPER_DB_PWD: ${{ secrets.GATEKEEPER_DB_PWD }}
                   GATEKEEPER_DISCORD_TOKEN: ${{ secrets.GATEKEEPER_DISCORD_TOKEN }}
-              env:
                   ONBUILD: kruhlmann/gatekeeper:onbuild
                   IMAGE: kruhlmann/gatekeeper
