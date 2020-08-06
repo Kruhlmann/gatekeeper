@@ -20,8 +20,8 @@ export function get_block_chance(
     scenario: CombatScenario,
     attacking_from_the_front: boolean
 ): number {
-    if (attacking_from_the_front) {
+    if (!attacking_from_the_front) {
         return 0;
     }
-    Math.min(5, 5 + scenario.skill_delta * 0.1);
+    return Math.min(5, 5 + scenario.skill_delta * 0.1);
 }
