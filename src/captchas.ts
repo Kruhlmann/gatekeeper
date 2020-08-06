@@ -1,168 +1,30 @@
-import * as adjectives from "../res/adjectives.json";
-import * as nouns from "../res/nouns.json";
-import { Scenario, CombatScenario, Captcha } from "./typings/types";
+import { CombatScenario, Captcha } from "./typings/types";
+import { make_combat_scenario } from "./scenario_generator";
+import { get_random_item_in_array } from "./array";
+import { generate_block_captcha } from "./captcha_generators/block";
+import { generate_dodge_captcha } from "./captcha_generators/dodge";
+import { generate_glancing_blow_captcha } from "./captcha_generators/glancing_blow";
+import {generate_hit_captcha} from "./captcha_generators/hit";
 
-const sexes = ["non-binary", "male", "female"];
-const races = ["orc", "human", "troll", "gnome"];
-const weapons = [
-    ["sword", "dual wielded"],
-    ["sword", "2 handed"],
-    ["mace", "dual wielded"],
-    ["mace", "2 handed"],
-    ["axe", "dual wielded"],
-    ["axe", "2 handed"],
-    ["dagger", "dual wielded"],
-    ["fist", "dual wielded"],
-    ["staff", "2 handed"],
-    ["polearm", "2 handed"],
-];
-const targets = [
-    "Firelord",
-    "Lava Reaver",
-    "Lava Surger",
-    "Firewalker",
-    "Core Hound",
-    "Lava Annihilator",
-];
-const min_lvl = 57;
-const max_lvl = 63;
-
-function title_case(str: string): string {
-    let splitStr = str.toLowerCase().split(" ");
-    for (let i = 0; i < splitStr.length; i++) {
-        // You do not need to check if i is larger than splitStr length, as your for does that for you
-        // Assign it back to the array
-        splitStr[i] =
-            splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
-    }
-    // Directly return the joined string
-    return splitStr.join(" ");
-}
-
-/**
- * Returns a random element in an array.
- *
- * @param arr - Array of elements.
- * @returns - A random element in the array.
- */
-function arr_random(arr: any[]): any {
-    return arr[Math.floor(Math.random() * arr.length)];
-}
-
-/**
- * Generates random data for a scenario.
- *
- * @returns - Scenario data.
- */
-function make_scenario(): Scenario {
-    const sex = arr_random(sexes) as string;
-    const race = arr_random(races) as string;
-    const sex_prefix = sex === "male" && race === "human" ? "bald" : "";
-    const guild_adjective = arr_random(adjectives.words);
-    const guild_noun = arr_random(nouns.words);
-    const guild_name = title_case(`${guild_adjective} ${guild_noun}`);
-
-    return { sex, race, sex_prefix, guild_name };
-}
-
-/**
- * Generates a random combat scenario.
- *
- * @returns - Scenario data.
- */
-function make_combat_scenario(): CombatScenario {
-    const scenario = make_scenario();
-    const [wpn_type, wpn_subtype]: [string, string] = arr_random(weapons);
-    const orc_factor = scenario.race === "orc" && wpn_type === "axe" ? 5 : 0;
-    const human_factor =
-        scenario.race === "human" &&
-        (wpn_type === "mace" || wpn_type === "sword")
-            ? 5
-            : 0;
-    const wpn_skill = 300 + orc_factor + human_factor;
-
-    const tar_nam = arr_random(targets) as string;
-    const tar_lvl = Math.round(Math.random() * (max_lvl - min_lvl) + min_lvl);
-
-    const weapon = { type: wpn_type, subtype: wpn_subtype, skill: wpn_skill };
-    const target = { name: tar_nam, level: tar_lvl, defense: tar_lvl * 5 };
-    return {
-        ...scenario,
-        weapon,
-        target,
-        skill_delta: tar_lvl * 5 - wpn_skill,
-    };
-}
-
-function calc_mitigation(
+function calculate_mitigation(
     mitigation_type: string,
-    front: boolean,
+    attacking_from_the_front: boolean,
     scenario: CombatScenario,
-    yellow_hits: boolean
-): { answer: number; query: string; example: string } {
-    const miss_modifier = scenario.skill_delta > 10 ? 0.2 : 0.1;
-    const miss_penalty = scenario.skill_delta > 10 ? 1 : 0;
-    let answer: number;
-    let example: string;
-    let query: string;
-
-    if (mitigation_type !== "none") {
-        // Mitigation type is either block, dodge, parry or glancing.
-        switch (mitigation_type) {
-            case "parry":
-                // TODO: This has no formula yet.
-                const parry_chance = 10;
-                answer = Math.ceil(parry_chance / 10) * 10;
-                query =
-                    "the chance that your attacks are parried (**rounded up to nearest 1/10th**)?";
-                example = "19.4";
-                break;
-            case "block":
-                const block_chance = front
-                    ? Math.min(5, 5 + scenario.skill_delta * 0.1)
-                    : 0;
-                answer = block_chance;
-                query =
-                    "the chance that your attacks are blocked (**rounded up to nearest 1/10th**)?";
-                example = "14.2";
-                break;
-            case "dodge":
-                const dodge_chance = 5 + scenario.skill_delta * 0.1;
-                answer = dodge_chance;
-                query =
-                    "the chance that your attacks are dodged (**rounded up to nearest 1/10th**)?";
-                example = "7.2";
-                break;
-            case "glancing":
-                const glancing_chance =
-                    10 +
-                    (scenario.target.defense -
-                        Math.min(300, scenario.weapon.skill)) *
-                        2;
-                answer = Math.ceil(glancing_chance / 10) * 10;
-                query =
-                    "the chance that your auto attacks land a glancing blow (**rounded up to nearest 1/10th**)?";
-                example = "5.2";
-                break;
-            default:
-                throw new Error(`Unknown mitigation type: ${mitigation_type}`);
-        }
-    } else {
-        // No mitigation type means hit cap calculation.
-        let miss_chance = 5 + scenario.skill_delta * miss_modifier;
-        // DWMissChance = NormalMissChance * 0.8 + 20%.
-        // This only applies to white hits.
-        if (scenario.weapon.subtype === "dual wielded" && !yellow_hits) {
-            miss_chance = miss_chance * 0.8 + 20;
-        }
-        answer = Math.ceil(miss_chance + miss_penalty);
-        query = `the hit from gear required to reach your **${
-            yellow_hits ? "yellow" : "white"
-        }** hit cap (rounded up to nearest 1/10th)?`;
-        example = "13.1";
+    yellow_attacks_only: boolean
+): Captcha {
+    switch (mitigation_type) {
+        case "block":
+            return generate_block_captcha(
+                scenario,
+                attacking_from_the_front
+            );
+        case "dodge":
+            return generate_dodge_captcha(scenario);
+        case "glancing":
+            return generate_glancing_blow_captcha(scenario);
+        default:
+            return generate_hit_captcha(scenario, yellow_attacks_only)l
     }
-
-    return { answer, query, example };
 }
 
 function generate_scenario_text(
@@ -204,14 +66,14 @@ export function hit_cap_generator(
     const scenario = _scenario ? _scenario : make_combat_scenario();
     const mitigation_type = _mitigation_type
         ? _mitigation_type
-        : arr_random(["none", "dodge", "block", "glancing"]);
+        : get_random_item_in_array(["none", "dodge", "block", "glancing"]);
     const yellow_hits =
         _yellow_hits !== undefined ? _yellow_hits : Math.random() < 0.5;
     const front =
         _front !== undefined
             ? _front || mitigation_type === "block"
             : Math.random() < 0.5 || mitigation_type === "block";
-    const mitigation_calc = calc_mitigation(
+    const mitigation_calc = calculate_mitigation(
         mitigation_type,
         front,
         scenario,
@@ -224,7 +86,7 @@ export function hit_cap_generator(
 
     return {
         answer: Math.max(0, mitigation_calc.answer).toFixed(1),
-        text: `${scenario_txt}\n\n${question}`,
+        description: `${scenario_txt}\n\n${question}`,
     };
 }
 
@@ -260,5 +122,5 @@ export const generators: Function[] = [
  * @returns - Generator function.
  */
 export function generate(): Captcha {
-    return arr_random(generators)();
+    return get_random_item_in_array(generators)();
 }

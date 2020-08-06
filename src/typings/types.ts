@@ -5,32 +5,37 @@ export enum LoggingLevel {
     ERR = 3,
 }
 
-export interface Scenario {
+export type Scenario = {
     sex: string;
     race: string;
     sex_prefix: string;
     guild_name: string;
-}
+};
 
-export interface CombatScenario {
+export type CombatScenario = {
     sex: string;
     race: string;
     sex_prefix: string;
     guild_name: string;
-    weapon: {
-        type: string;
-        subtype: string;
-        skill: number;
-    };
-    target: {
-        name: string;
-        level: number;
-        defense: number;
-    };
+    weapon: Weapon;
+    target: Target;
     skill_delta: number;
-}
+};
 
-export interface Captcha {
-    answer: string;
-    text: string;
-}
+export type Captcha = {
+    answer: number;
+    description: string;
+    example: number;
+};
+
+export type Target = {
+    name: string;
+    level: number;
+    defense: number;
+};
+
+export type Weapon = {
+    type: string;
+    subtype: string;
+    skill: number;
+};
