@@ -10,7 +10,7 @@ export function generate_block_captcha(
 ): Captcha {
     const captcha_answer = get_block_chance(scenario, attacking_from_the_front);
     return {
-        answer: captcha_answer,
+        answer: captcha_answer.toFixed(1),
         description: block_captcha_description,
         example: block_captcha_example_answer,
     };

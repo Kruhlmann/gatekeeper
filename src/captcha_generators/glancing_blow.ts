@@ -9,7 +9,7 @@ export function generate_glancing_blow_captcha(
 ): Captcha {
     const captcha_answer = get_glancing_blow_chance(scenario);
     return {
-        answer: captcha_answer,
+        answer: captcha_answer.toFixed(1),
         description: glancing_blow_captcha_description,
         example: glancing_blow_captcha_example_answer,
     };

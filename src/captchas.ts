@@ -4,7 +4,7 @@ import { get_random_item_in_array } from "./array";
 import { generate_block_captcha } from "./captcha_generators/block";
 import { generate_dodge_captcha } from "./captcha_generators/dodge";
 import { generate_glancing_blow_captcha } from "./captcha_generators/glancing_blow";
-import {generate_hit_captcha} from "./captcha_generators/hit";
+import { generate_hit_captcha } from "./captcha_generators/hit";
 
 function calculate_mitigation(
     mitigation_type: string,
@@ -14,16 +14,13 @@ function calculate_mitigation(
 ): Captcha {
     switch (mitigation_type) {
         case "block":
-            return generate_block_captcha(
-                scenario,
-                attacking_from_the_front
-            );
+            return generate_block_captcha(scenario, attacking_from_the_front);
         case "dodge":
             return generate_dodge_captcha(scenario);
         case "glancing":
             return generate_glancing_blow_captcha(scenario);
         default:
-            return generate_hit_captcha(scenario, yellow_attacks_only)l
+            return generate_hit_captcha(scenario, yellow_attacks_only);
     }
 }
 
@@ -73,26 +70,9 @@ export function hit_cap_generator(
         _front !== undefined
             ? _front || mitigation_type === "block"
             : Math.random() < 0.5 || mitigation_type === "block";
-    const mitigation_calc = calculate_mitigation(
-        mitigation_type,
-        front,
-        scenario,
-        yellow_hits
-    );
-
-    // Message text.
-    const scenario_txt = generate_scenario_text(scenario, front);
-    const question = `Given these parameters what is ${mitigation_calc.query}\n\nAnswer example: \`${mitigation_calc.example}\``;
-
-    return {
-        answer: Math.max(0, mitigation_calc.answer).toFixed(1),
-        description: `${scenario_txt}\n\n${question}`,
-    };
+    return calculate_mitigation(mitigation_type, front, scenario, yellow_hits);
 }
 
-function wrapper_parry_generator(_scenario?: CombatScenario) {
-    return hit_cap_generator(_scenario, "parry");
-}
 function wrapper_block_generator(_scenario?: CombatScenario) {
     return hit_cap_generator(_scenario, "block");
 }
@@ -106,21 +86,13 @@ function wrapper_hit_cap_generator(_scenario?: CombatScenario) {
     return hit_cap_generator(_scenario, "none");
 }
 
-// List of all generators.
 export const generators: Function[] = [
-    // TODO: Re-add this when we actually have a formula.
-    // wrapper_parry_generator,
     wrapper_block_generator,
     wrapper_dodge_generator,
     wrapper_glancing_generator,
     wrapper_hit_cap_generator,
 ];
 
-/**
- * Returns a random generator function.
- *
- * @returns - Generator function.
- */
 export function generate(): Captcha {
     return get_random_item_in_array(generators)();
 }

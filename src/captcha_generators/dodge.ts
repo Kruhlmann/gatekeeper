@@ -7,7 +7,7 @@ const dodge_captcha_example_answer = 7.2;
 export function generate_dodge_captcha(scenario: CombatScenario): Captcha {
     const captcha_answer = get_dodge_chance(scenario);
     return {
-        answer: captcha_answer,
+        answer: captcha_answer.toFixed(1),
         description: dodge_captcha_description,
         example: dodge_captcha_example_answer,
     };

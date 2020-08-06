@@ -23,7 +23,7 @@ export type CombatScenario = {
 };
 
 export type Captcha = {
-    answer: number;
+    answer: string;
     description: string;
     example: number;
 };

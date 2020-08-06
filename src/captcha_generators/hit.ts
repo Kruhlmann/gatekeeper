@@ -11,7 +11,7 @@ export function generate_hit_captcha(
         yellow_attacks_only
     );
     return {
-        answer: captcha_answer,
+        answer: Math.ceil(captcha_answer).toFixed(1),
         description: hit_captcha_description,
         example: hit_captcha_example_answer,
     };
